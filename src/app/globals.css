@@ -1,0 +1,123 @@
+@import "tailwindcss";
+
+/* Brand: black primary on a light-grey canvas; colour is reserved for data,
+   status and action accents so it always carries meaning. */
+@theme {
+  --color-ink: #0a0a0a;
+  --color-paper: #ffffff;
+  --color-canvas: #f5f6f8;
+  --color-grey-50: #fafafa;
+  --color-grey-100: #f3f4f6;
+  --color-grey-200: #e5e7eb;
+  --color-grey-300: #d1d5db;
+  --color-grey-400: #9ca3af;
+  --color-grey-500: #6b7280;
+  --color-grey-600: #4b5563;
+  --color-grey-700: #374151;
+  --color-grey-800: #1f2937;
+  --color-grey-900: #111827;
+
+  --color-blue: #2563eb;
+  --color-blue-soft: #eff6ff;
+  --color-green: #059669;
+  --color-green-soft: #ecfdf5;
+  --color-orange: #ea580c;
+  --color-orange-soft: #fff7ed;
+  --color-purple: #7c3aed;
+  --color-purple-soft: #f5f3ff;
+  --color-red: #dc2626;
+  --color-red-soft: #fef2f2;
+  --color-teal: #0d9488;
+  --color-teal-soft: #f0fdfa;
+
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --shadow-card: 0 1px 2px rgb(16 24 40 / 0.04), 0 1px 3px rgb(16 24 40 / 0.06);
+  --shadow-float: 0 10px 30px -10px rgb(16 24 40 / 0.25);
+
+  /* One corner radius (5px) for every surface, tile, control and section.
+     `rounded-full` is untouched so dots, avatars and progress bars stay round. */
+  --radius-sm: 5px;
+  --radius-md: 5px;
+  --radius-lg: 5px;
+  --radius-xl: 5px;
+  --radius-2xl: 5px;
+  --radius-3xl: 5px;
+  --radius-4xl: 5px;
+}
+
+:root {
+  color-scheme: light;
+}
+
+html, body {
+  height: 100%;
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  border-color: var(--color-grey-200);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: var(--color-ink);
+  color: var(--color-paper);
+}
+
+dialog::backdrop {
+  background: rgb(10 10 10 / 0.55);
+  backdrop-filter: blur(2px);
+}
+
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Thin, unobtrusive scrollbars inside the dark sidebar */
+.dark-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #374151 transparent;
+}
+
+/* Tailwind's preflight zeroes every margin, which removes the browser's own
+   `margin: auto` on open <dialog>s and pins them to the top-left corner.
+   Restore centring for every modal. */
+dialog[open] {
+  margin: auto;
+  max-width: 100vw;
+  max-height: 100vh;
+}
+
+/* Tailwind 4 removed the pointer cursor from buttons; every actionable control
+   shows a hand, disabled ones show not-allowed. */
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]),
+[role="tab"],
+[role="menuitem"],
+a[href],
+summary,
+label:has(> input[type="checkbox"]:not(:disabled)),
+label:has(> input[type="radio"]:not(:disabled)),
+input[type="checkbox"]:not(:disabled),
+input[type="radio"]:not(:disabled),
+input[type="file"]:not(:disabled),
+input[type="file"]::file-selector-button,
+select:not(:disabled) {
+  cursor: pointer;
+}
+
+button:disabled,
+[aria-disabled="true"],
+input:disabled,
+select:disabled,
+textarea:disabled {
+  cursor: not-allowed;
+}
