@@ -10,9 +10,51 @@ export const count = (n: number | null | undefined) => (n == null ? '—' : num.
 export const dateTime = (iso: string | null | undefined) => (iso ? dt.format(new Date(iso)) : '—');
 export const date = (iso: string | null | undefined) => (iso ? d.format(new Date(iso)) : '—');
 export const pct = (v: number | null | undefined) => (v == null ? '—' : `${v}%`);
-/** Title Case for enum-like values: `PENDING_VERIFICATION` → `Pending Verification`. */
-export const title = (s: string | null | undefined) =>
-  s ? s.toLowerCase().replace(/_/g, ' ').replace(/(^|\s)\w/g, (c) => c.toUpperCase()) : '—';
+/** Words that stay upper case in labels (registries, documents, tax and payment terms). */
+const ACRONYMS = new Set([
+  'ABDM', 'AERB', 'ALS', 'API', 'BLS', 'CEA', 'CSV', 'CT', 'ECG', 'EEG', 'EMT', 'FCM', 'GST', 'GSTIN', 'HFR', 'HPR', 'HTTP', 'HTTPS', 'ICU', 'ID', 'IFSC', 'IMPS', 'INR', 'IPD', 'ISO',
+  'KYC', 'MRI', 'NABH', 'NABL', 'NEFT', 'NMC', 'NOC', 'OPD', 'OTP', 'PAN', 'PCPNDT', 'PDF', 'PIN', 'PNDT', 'PWA', 'RTGS', 'SLA', 'SMS', 'SMTP', 'TDS', 'UPI', 'URL', 'USG', 'UTR', 'VAPID',
+]);
+/** Short joining words kept lower case unless they open or close the label. */
+const MINOR = new Set(['a', 'an', 'and', 'as', 'at', 'by', 'for', 'in', 'of', 'on', 'or', 'per', 'the', 'to', 'via', 'vs', 'with']);
+
+/**
+ * Title Case for enum-like and free-text labels, keeping acronyms upper case:
+ * `PENDING_VERIFICATION` → `Pending Verification`, `GST_CERTIFICATE` → `GST Certificate`,
+ * `auth.login` → `Auth Login`, `cancelled by patient` → `Cancelled by Patient`.
+ */
+export const title = (s: string | null | undefined) => {
+  if (!s) return '—';
+  const words = s.replace(/[_.]+/g, ' ').trim().split(/\s+/);
+  return words
+    .map((w, i) => {
+      const up = w.toUpperCase();
+      if (ACRONYMS.has(up.replace(/[^A-Z]/g, ''))) return up;
+      const lower = w.toLowerCase();
+      if (i > 0 && i < words.length - 1 && MINOR.has(lower)) return lower;
+      return lower.replace(/(^|[-/(])([a-z])/g, (_m, p: string, c: string) => p + c.toUpperCase());
+    })
+    .join(' ');
+};
+/** Alias for enum display (statuses, provider types, document kinds). */
+export const label = title;
+/** Ratings always show one decimal everywhere: 3.99 → "4.0". */
+export const rating = (v: number | string | null | undefined) => {
+  const n = typeof v === 'string' ? Number(v) : v;
+  return n == null || Number.isNaN(n) ? '—' : n.toFixed(1);
+};
+const compactNum = new Intl.NumberFormat('en-IN', { maximumFractionDigits: 2 });
+/** Compact INR for tiles (minor units in): ₹950, ₹12.5K, ₹25.07L, ₹1.72Cr. Show `money()` in a title for the exact value. */
+export const moneyCompact = (minor: number | null | undefined) => {
+  if (minor == null) return '—';
+  const rupees = minor / 100;
+  const a = Math.abs(rupees);
+  const sign = rupees < 0 ? '-' : '';
+  if (a >= 1e7) return `${sign}₹${compactNum.format(a / 1e7)}Cr`;
+  if (a >= 1e5) return `${sign}₹${compactNum.format(a / 1e5)}L`;
+  if (a >= 1e3) return `${sign}₹${compactNum.format(a / 1e3)}K`;
+  return `${sign}₹${compactNum.format(a)}`;
+};
 export const short = (id: string | null | undefined) => (id ? id.slice(0, 8) : '—');
 export const minutes = (m: number) => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
 export const relative = (iso: string | null | undefined) => {

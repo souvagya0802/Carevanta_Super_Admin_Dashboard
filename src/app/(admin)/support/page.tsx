@@ -225,7 +225,7 @@ function CaseDialog({ id, options, manage, meId, onClose }: { id: string; option
           <div className="space-y-4">
             <FormSection title="What Happened" icon={FileText} accent="blue">
               <p className="whitespace-pre-wrap text-sm">{c.description}</p>
-              {c.resolution && <div className="mt-3 rounded-lg border border-green/30 bg-green-soft p-3 text-sm"><p className="text-xs font-semibold uppercase tracking-wide text-green">Resolution · shown to the reporter</p><p className="mt-1 whitespace-pre-wrap">{c.resolution}</p>{c.resolvedAt && <p className="mt-1 text-xs text-grey-600">Resolved {dateTime(c.resolvedAt)} after {c.resolutionHours} h · SLA {c.resolvedWithinSla ? 'met' : 'missed'}</p>}</div>}
+              {c.resolution && <div className="mt-3 rounded-lg border border-green/30 bg-green-soft p-3 text-sm"><p className="text-xs font-semibold text-green">Resolution · shown to the reporter</p><p className="mt-1 whitespace-pre-wrap">{c.resolution}</p>{c.resolvedAt && <p className="mt-1 text-xs text-grey-600">Resolved {dateTime(c.resolvedAt)} after {c.resolutionHours} h · SLA {c.resolvedWithinSla ? 'met' : 'missed'}</p>}</div>}
             </FormSection>
 
             <FormSection title="Timeline" icon={Clock} accent="purple" hint="Comments marked internal never reach the reporter.">
@@ -254,7 +254,7 @@ function CaseDialog({ id, options, manage, meId, onClose }: { id: string; option
                 <div className="mt-4 space-y-2 border-t border-grey-100 pt-4">
                   <Textarea placeholder={internal ? 'Internal note for the team…' : 'Reply to the reporter…'} value={comment} onChange={(e) => setComment(e.target.value)} className="min-h-20" maxLength={5000} />
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <Checkbox label="Internal note (not shown to the reporter)" checked={internal} onChange={(e) => setInternal(e.target.checked)} />
+                    <Checkbox label="Internal Note (Not Shown to the Reporter)" checked={internal} onChange={(e) => setInternal(e.target.checked)} />
                     <Button size="sm" onClick={() => addComment.mutate()} loading={addComment.isPending} disabled={!comment.trim()}><MessageSquare size={14} /> {internal ? 'Add Note' : 'Send Reply'}</Button>
                   </div>
                 </div>
@@ -285,7 +285,7 @@ function CaseDialog({ id, options, manage, meId, onClose }: { id: string; option
               {manage && isOpen && (
                 <div className="mt-2 space-y-2">
                   {c.assignedToId !== meId && <Button size="sm" variant="secondary" className="w-full" onClick={() => assign.mutate(meId!)} loading={assign.isPending}><UserCheck size={14} /> Assign to Me</Button>}
-                  <Select aria-label="Assign to" value={c.assignedToId ?? ''} onChange={(e) => assign.mutate(e.target.value || null)} disabled={assign.isPending || !options}>
+                  <Select aria-label="Assign To" value={c.assignedToId ?? ''} onChange={(e) => assign.mutate(e.target.value || null)} disabled={assign.isPending || !options}>
                     <option value="">Unassigned</option>
                     {options?.agents.map((a) => <option key={a.id} value={a.id}>{a.id === meId ? `${a.fullName} (you)` : a.fullName}</option>)}
                   </Select>
@@ -298,7 +298,7 @@ function CaseDialog({ id, options, manage, meId, onClose }: { id: string; option
               <dl className="space-y-2 text-sm">
                 <div><dt className="text-xs text-grey-500">Provider</dt><dd>{c.provider ? <Link className="underline underline-offset-2" href={`/providers/${c.provider.id}`}>{c.provider.displayName}</Link> : '—'}</dd></div>
                 <div><dt className="text-xs text-grey-500">Transaction</dt><dd>{c.transaction ? <Link className="font-mono text-xs underline underline-offset-2" href={`/payments?transactionId=${c.transaction.id}`}>{c.transaction.reference}</Link> : '—'}</dd></div>
-                <div><dt className="text-xs text-grey-500">Reporter</dt><dd>{c.reporterUserId ? <Link className="underline underline-offset-2" href={`/users/${c.reporterUserId}`}>{c.reporterName ?? c.reporterUserId.slice(0, 8)}</Link> : <span className="text-grey-500">Not a platform user</span>}</dd></div>
+                <div><dt className="text-xs text-grey-500">Reporter</dt><dd>{c.reporterUserId ? <Link className="underline underline-offset-2" href={`/users/${c.reporterUserId}`}>{c.reporterName ?? c.reporterUserId.slice(0, 8)}</Link> : <span className="text-grey-500">Not a Platform User</span>}</dd></div>
                 <div><dt className="text-xs text-grey-500">Opened By</dt><dd>{c.createdByName ?? '—'}</dd></div>
               </dl>
             </FormSection>
@@ -375,7 +375,7 @@ function CreateCaseDialog({ options, onClose, onCreated }: { options: Options; o
                   <Input placeholder="Search by name…" value={providerQ} onChange={(e) => setProviderQ(e.target.value)} />
                   {pq.length >= 2 && (
                     <ul className="absolute inset-x-0 top-full z-20 mt-1 max-h-48 overflow-y-auto rounded-lg border border-grey-200 bg-paper py-1 text-sm shadow-[var(--shadow-float)]">
-                      {providers.isPending ? <li className="px-3 py-2 text-grey-500">Searching…</li> : providers.data?.length ? providers.data.map((p) => <li key={p.id}><button type="button" className="flex w-full items-center justify-between px-3 py-2 text-left hover:bg-grey-50" onClick={() => { setF({ ...f, providerId: p.id, providerName: p.displayName }); setProviderQ(''); }}><span className="truncate">{p.displayName}</span><span className="ml-2 shrink-0 text-xs text-grey-500">{title(p.type)}</span></button></li>) : <li className="px-3 py-2 text-grey-500">No providers match</li>}
+                      {providers.isPending ? <li className="px-3 py-2 text-grey-500">Searching…</li> : providers.data?.length ? providers.data.map((p) => <li key={p.id}><button type="button" className="flex w-full items-center justify-between px-3 py-2 text-left hover:bg-grey-50" onClick={() => { setF({ ...f, providerId: p.id, providerName: p.displayName }); setProviderQ(''); }}><span className="truncate">{p.displayName}</span><span className="ml-2 shrink-0 text-xs text-grey-500">{title(p.type)}</span></button></li>) : <li className="px-3 py-2 text-grey-500">No Providers Match</li>}
                     </ul>
                   )}
                 </div>
@@ -387,7 +387,7 @@ function CreateCaseDialog({ options, onClose, onCreated }: { options: Options; o
                   <Input placeholder="Search name, email or mobile…" value={reporterQ} onChange={(e) => setReporterQ(e.target.value)} />
                   {rq.length >= 2 && (
                     <ul className="absolute inset-x-0 top-full z-20 mt-1 max-h-48 overflow-y-auto rounded-lg border border-grey-200 bg-paper py-1 text-sm shadow-[var(--shadow-float)]">
-                      {reporters.isPending ? <li className="px-3 py-2 text-grey-500">Searching…</li> : reporters.data?.length ? reporters.data.map((u) => <li key={u.id}><button type="button" className="flex w-full items-center justify-between px-3 py-2 text-left hover:bg-grey-50" onClick={() => { setF({ ...f, reporterUserId: u.id, reporterName: u.fullName }); setReporterQ(''); }}><span className="truncate">{u.fullName}</span><span className="ml-2 shrink-0 text-xs text-grey-500">{u.email ?? u.phone ?? ''}</span></button></li>) : <li className="px-3 py-2 text-grey-500">No users match</li>}
+                      {reporters.isPending ? <li className="px-3 py-2 text-grey-500">Searching…</li> : reporters.data?.length ? reporters.data.map((u) => <li key={u.id}><button type="button" className="flex w-full items-center justify-between px-3 py-2 text-left hover:bg-grey-50" onClick={() => { setF({ ...f, reporterUserId: u.id, reporterName: u.fullName }); setReporterQ(''); }}><span className="truncate">{u.fullName}</span><span className="ml-2 shrink-0 text-xs text-grey-500">{u.email ?? u.phone ?? ''}</span></button></li>) : <li className="px-3 py-2 text-grey-500">No Users Match</li>}
                     </ul>
                   )}
                 </div>

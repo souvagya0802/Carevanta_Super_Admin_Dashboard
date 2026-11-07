@@ -116,7 +116,7 @@ function OutboxTab({ stats, catalogue, manage }: { stats: ReturnType<typeof useG
 
   const columns: ColumnDef<Notification, unknown>[] = [
     { header: 'Message', cell: ({ row }) => <div className="min-w-44"><p className="font-mono text-xs font-medium">{row.original.templateKey}</p>{keyLabel(row.original.templateKey) && <p className="line-clamp-1 text-xs text-grey-500" title={keyLabel(row.original.templateKey)}>{keyLabel(row.original.templateKey)}</p>}</div> },
-    { header: 'Channel', cell: ({ row }) => { const Icon = CHANNEL_ICON[row.original.channel] ?? Send; return <span className="inline-flex items-center gap-1.5 text-xs"><Icon size={14} aria-hidden className="text-grey-500" />{row.original.channel.replace('_', ' ')}</span>; } },
+    { header: 'Channel', cell: ({ row }) => { const Icon = CHANNEL_ICON[row.original.channel] ?? Send; return <span className="inline-flex items-center gap-1.5 text-xs"><Icon size={14} aria-hidden className="text-grey-500" />{title(row.original.channel)}</span>; } },
     { header: 'Recipient', cell: ({ row }) => <div><p className="font-mono text-xs">{row.original.recipient}</p>{row.original.userId && <Link href={`/users/${row.original.userId}`} onClick={(e) => e.stopPropagation()} className="text-xs text-grey-500 underline-offset-2 hover:underline">User {row.original.userId.slice(0, 8)}</Link>}</div> },
     { header: 'Status', cell: ({ row }) => {
       const n = row.original;
@@ -143,7 +143,7 @@ function OutboxTab({ stats, catalogue, manage }: { stats: ReturnType<typeof useG
     <>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <StatTile label="Queued" value={s ? count(queued) : null} sub={s?.oldestQueuedAt ? `Oldest waiting ${relative(s.oldestQueuedAt)}` : 'Nothing waiting'} tone={queued > 0 && s?.oldestQueuedAt && Date.parse(s.oldestQueuedAt) < nowMs() - 10 * 60_000 ? 'warn' : undefined} />
-        <StatTile label="Sent · Last 24 h" value={s ? count(s.last24h.SENT ?? 0) : null} sub={s ? Object.entries(s.byChannel24h).map(([c, n]) => `${c.replace('_', ' ')} ${n}`).join(' · ') || 'No traffic yet' : ''} />
+        <StatTile label="Sent · Last 24 h" value={s ? count(s.last24h.SENT ?? 0) : null} sub={s ? Object.entries(s.byChannel24h).map(([c, n]) => `${title(c)} ${n}`).join(' · ') || 'No traffic yet' : ''} />
         <StatTile label="Failed" value={s ? count(failed) : null} sub={failed ? 'Retry after fixing the cause' : 'No failures'} tone={failed > 0 ? 'bad' : undefined} />
         <StatTile label="Cancelled" value={s ? count(s.byStatus.CANCELLED ?? 0) : null} sub="Stopped by an administrator" />
       </div>
@@ -169,7 +169,7 @@ function OutboxTab({ stats, catalogue, manage }: { stats: ReturnType<typeof useG
           toolbar={
             <>
               <Select aria-label="Status" value={filters.status} onChange={(e) => set('status', e.target.value)} className="w-40"><option value="">All Statuses</option>{STATUSES.map((x) => <option key={x} value={x}>{title(x)}</option>)}</Select>
-              <Select aria-label="Channel" value={filters.channel} onChange={(e) => set('channel', e.target.value)} className="w-36"><option value="">All Channels</option>{(catalogue?.channels ?? ['EMAIL', 'SMS', 'PUSH', 'IN_APP']).map((x) => <option key={x} value={x}>{x.replace('_', ' ')}</option>)}</Select>
+              <Select aria-label="Channel" value={filters.channel} onChange={(e) => set('channel', e.target.value)} className="w-36"><option value="">All Channels</option>{(catalogue?.channels ?? ['EMAIL', 'SMS', 'PUSH', 'IN_APP']).map((x) => <option key={x} value={x}>{title(x)}</option>)}</Select>
               <Select aria-label="Template" value={filters.templateKey} onChange={(e) => set('templateKey', e.target.value)} className="w-56"><option value="">All Templates</option>{catalogue?.keys.map((k) => <option key={k.key} value={k.key}>{k.key}</option>)}</Select>
               <Input aria-label="User ID" placeholder="User ID" value={filters.userId} onChange={(e) => set('userId', e.target.value)} className={cx('w-72', !userIdValid && 'border-red')} aria-invalid={!userIdValid} />
               {Object.values(filters).some(Boolean) && <Button size="sm" variant="ghost" onClick={reset}>Clear</Button>}
@@ -232,9 +232,9 @@ function TemplatesTab({ catalogue, manage, smtp }: { catalogue: ReturnType<typeo
         actions={manage && <Button size="sm" variant="secondary" onClick={startNew}><Plus size={14} /> New Template</Button>}
       >
         {templates.isPending || catalogue.isPending ? <Skeleton rows={6} /> : templates.isError ? <ErrorState error={templates.error} retry={() => templates.refetch()} /> : catalogue.isError ? <ErrorState error={catalogue.error} retry={() => catalogue.refetch()} /> : rows.length === 0 ? <p className="text-sm text-grey-500">No templates yet.</p> : (
-          <div className="overflow-x-auto">
+          <div className="relative overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="text-left text-xs uppercase tracking-wide text-grey-500"><tr><th className="py-1 pr-3">Key</th><th className="px-2 py-1">Channel</th><th className="px-2 py-1">Language</th><th className="px-2 py-1">Version</th><th className="px-2 py-1">Message</th><th className="py-1" /></tr></thead>
+              <thead className="text-left text-xs text-grey-500"><tr><th className="py-1 pr-3">Key</th><th className="px-2 py-1">Channel</th><th className="px-2 py-1">Language</th><th className="px-2 py-1">Version</th><th className="px-2 py-1">Message</th><th className="py-1" /></tr></thead>
               <tbody>
                 {rows.map((r) => {
                   const info = cat?.keys.find((k) => k.key === r.key);
@@ -243,7 +243,7 @@ function TemplatesTab({ catalogue, manage, smtp }: { catalogue: ReturnType<typeo
                   return (
                     <tr key={`${r.key}|${r.channel}|${r.locale}`} className={cx('border-t border-grey-100 align-top', !r.active && r.needed && 'bg-red-soft/60')}>
                       <td className="py-2 pr-3"><p className="font-mono text-xs font-medium">{r.key}</p>{info && <p className="max-w-xs text-xs text-grey-500">{info.description}</p>}</td>
-                      <td className="px-2 py-2 text-xs"><span className="inline-flex items-center gap-1.5"><Icon size={14} aria-hidden className="text-grey-500" />{r.channel.replace('_', ' ')}</span></td>
+                      <td className="px-2 py-2 text-xs"><span className="inline-flex items-center gap-1.5"><Icon size={14} aria-hidden className="text-grey-500" />{title(r.channel)}</span></td>
                       <td className="px-2 py-2 text-xs">{LOCALE_NAMES[r.locale] ?? r.locale}</td>
                       <td className="px-2 py-2 text-xs">
                         {r.active ? <span className="flex items-center gap-1.5"><Badge accent="green">Active</Badge><span className="tnum text-grey-600">v{r.active.version}</span></span> : r.needed ? <Badge accent="red">Missing</Badge> : <Badge>Inactive</Badge>}
@@ -331,9 +331,9 @@ function TemplateEditor({ draft, catalogue, smtp, onClose, onPublished }: { draf
               {d.customKey ? <Input value={d.key} onChange={(e) => setD({ ...d, key: e.target.value.toLowerCase() })} placeholder="feature.event_name" /> : (
                 <Select value={d.key} onChange={(e) => setD({ ...d, key: e.target.value })}>{catalogue.keys.map((k) => <option key={k.key} value={k.key}>{k.key}</option>)}</Select>
               )}
-              <button type="button" className="mt-1 text-xs text-grey-500 underline-offset-2 hover:underline" onClick={() => setD({ ...d, customKey: !d.customKey, key: d.customKey ? (catalogue.keys[0]?.key ?? '') : d.key })}>{d.customKey ? 'Choose a known key instead' : 'Use a custom key'}</button>
+              <button type="button" className="mt-1 text-xs text-grey-500 underline-offset-2 hover:underline" onClick={() => setD({ ...d, customKey: !d.customKey, key: d.customKey ? (catalogue.keys[0]?.key ?? '') : d.key })}>{d.customKey ? 'Choose a Known Key Instead' : 'Use a Custom Key'}</button>
             </Field>
-            <Field label="Channel" required hint={info && !info.channels.includes(d.channel) ? `Code sends ${d.key} by ${info.channels.join(' / ')} only` : undefined}><Select value={d.channel} onChange={(e) => setD({ ...d, channel: e.target.value })}>{catalogue.channels.map((c) => <option key={c} value={c}>{c.replace('_', ' ')}</option>)}</Select></Field>
+            <Field label="Channel" required hint={info && !info.channels.includes(d.channel) ? `Code sends ${d.key} by ${info.channels.join(' / ')} only` : undefined}><Select value={d.channel} onChange={(e) => setD({ ...d, channel: e.target.value })}>{catalogue.channels.map((c) => <option key={c} value={c}>{title(c)}</option>)}</Select></Field>
             <Field label="Language" required hint="English is the fallback and must exist"><Select value={d.locale} onChange={(e) => setD({ ...d, locale: e.target.value })}>{catalogue.locales.map((l) => <option key={l} value={l}>{LOCALE_NAMES[l] ?? l}</option>)}</Select></Field>
           </div>
           {info && <p className="mt-2 text-xs text-grey-600">{info.description}</p>}
@@ -367,7 +367,7 @@ function TemplateEditor({ draft, catalogue, smtp, onClose, onPublished }: { draf
             )}
             {d.channel === 'EMAIL' && (
               <div className="mt-4 border-t border-grey-100 pt-3">
-                <p className="text-xs font-semibold uppercase tracking-wide text-grey-500">Send a Test</p>
+                <p className="text-xs font-semibold text-grey-500">Send a Test</p>
                 <p className="mt-0.5 text-xs text-grey-500">{smtp ? 'Sends the currently active version of this key, with sample values, to one address.' : 'Configure SMTP in Settings → Email to send test messages.'}</p>
                 <div className="mt-2 flex gap-2">
                   <Input type="email" placeholder="you@example.com" value={testTo} onChange={(e) => setTestTo(e.target.value)} disabled={!smtp} />

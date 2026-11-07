@@ -147,18 +147,18 @@ export function PracticeLocations({ value, onChange, regions, regionsLoading, er
                   </span>
                   <span className="block truncate text-xs text-grey-500">{summary || 'No address yet'}</span>
                 </button>
-                {!l.isPrimary && <Button type="button" size="sm" variant="ghost" onClick={() => makePrimary(l.key)} title="Make primary"><Star size={14} aria-hidden /> Make Primary</Button>}
+                {!l.isPrimary && <Button type="button" size="sm" variant="ghost" onClick={() => makePrimary(l.key)} title="Make Primary"><Star size={14} aria-hidden /> Make Primary</Button>}
                 <Button type="button" size="sm" variant="ghost" onClick={() => remove(l.key)} aria-label={`Remove ${l.name || noun}`} className="text-red"><Trash2 size={14} aria-hidden /></Button>
               </div>
               {open && (
                 <div className="grid gap-4 border-t border-grey-100 p-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
                   <div>
-                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-grey-500">Pick on Map</p>
+                    <p className="mb-2 text-xs font-semibold text-grey-500">Pick on Map</p>
                     <MapPicker value={l.point} onChange={(point, g) => onChange(value.map((x) => (x.key === l.key ? applyGeocode(x, point, g, states.data, regions) : x)))} />
                     {errs.point && <p role="alert" className="mt-1 text-xs text-red">{errs.point}</p>}
                   </div>
                   <div className="space-y-3">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-grey-500">Address Details</p>
+                    <p className="text-xs font-semibold text-grey-500">Address Details</p>
                     <div className="grid gap-3 md:grid-cols-2">
                       <Field label="Place Name" required error={errs.name} hint="How patients will see it"><Input placeholder={noun === 'chamber' ? 'e.g. Tamluk Chamber' : 'e.g. Main Campus'} value={l.name} onChange={(e) => update(l.key, { name: e.target.value })} /></Field>
                       <Field label="Phone" hint="Front desk, optional"><Input inputMode="tel" value={l.phone} onChange={(e) => update(l.key, { phone: e.target.value })} /></Field>
@@ -171,9 +171,9 @@ export function PracticeLocations({ value, onChange, regions, regionsLoading, er
                           <option value="">{regionsLoading ? 'Loading…' : regions?.length ? 'None' : 'No regions defined yet'}</option>
                           {regions?.map((x) => <option key={x.code} value={x.code}>{x.name} · {x.district}, {x.state}{x.status !== 'LIVE' ? ` (${x.status.toLowerCase()})` : ''}</option>)}
                         </Select>
-                        {!regionsLoading && !regions?.length && <Link href="/settings?tab=regions" className="mt-1 block text-xs underline underline-offset-2">Create service regions in Settings</Link>}
+                        {!regionsLoading && !regions?.length && <Link href="/settings?tab=regions" className="mt-1 block text-xs underline underline-offset-2">Create Service Regions in Settings</Link>}
                       </Field>
-                      <div className="self-end pb-2"><Checkbox label="Primary location" checked={l.isPrimary} onChange={() => makePrimary(l.key)} /></div>
+                      <div className="self-end pb-2"><Checkbox label="Primary Location" checked={l.isPrimary} onChange={() => makePrimary(l.key)} /></div>
                     </div>
                   </div>
                 </div>

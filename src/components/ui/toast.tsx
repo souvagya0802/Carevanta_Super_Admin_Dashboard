@@ -52,7 +52,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <Ctx.Provider value={value}>
       {children}
-      <div aria-live="polite" className="pointer-events-none fixed right-4 bottom-4 z-50 flex w-80 flex-col gap-2">
+      {/* Founder rule: every toast, in every Carevanta app, shows at the top of the screen. */}
+      <div aria-live="polite" className="pointer-events-none fixed inset-x-0 top-4 z-[100] flex flex-col items-center gap-2 px-4 [&>*]:w-full [&>*]:max-w-md">
         {items.map((t) => (
           <div
             key={t.id}

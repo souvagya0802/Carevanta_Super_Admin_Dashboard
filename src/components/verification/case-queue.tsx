@@ -119,10 +119,10 @@ function CaseQueueInner({ defaultView, heading, description, permission }: { def
             emptyDescription={anyFilter ? 'Try clearing a filter.' : view === 'open' ? 'A case opens when a provider is submitted for verification from its record.' : undefined}
             toolbar={
               <>
-                <div className="relative"><Search size={14} aria-hidden className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-grey-400" /><Input aria-label="Search provider" placeholder="Provider Name" value={filters.q} onChange={(e) => set('q', e.target.value)} className="w-64 pl-9" /></div>
-                <Select aria-label="Provider type" value={filters.providerType} onChange={(e) => set('providerType', e.target.value)} className="w-48"><option value="">All Provider Types</option>{PROVIDER_TYPES.map((t) => <option key={t} value={t}>{title(t)}</option>)}</Select>
+                <div className="relative"><Search size={14} aria-hidden className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-grey-400" /><Input aria-label="Search Provider" placeholder="Provider Name" value={filters.q} onChange={(e) => set('q', e.target.value)} className="w-64 pl-9" /></div>
+                <Select aria-label="Provider Type" value={filters.providerType} onChange={(e) => set('providerType', e.target.value)} className="w-48"><option value="">All Provider Types</option>{PROVIDER_TYPES.map((t) => <option key={t} value={t}>{title(t)}</option>)}</Select>
                 <Select aria-label="Kind" value={filters.kind} onChange={(e) => set('kind', e.target.value)} className="w-44"><option value="">Onboarding & Changes</option><option value="ONBOARDING">Onboarding</option><option value="CHANGE_REQUEST">Change Request</option></Select>
-                {view === 'open' && <Select aria-label="Case status" value={filters.status} onChange={(e) => set('status', e.target.value)} className="w-44"><option value="">All Open Statuses</option>{['OPEN', 'IN_REVIEW', 'AWAITING_PROVIDER'].map((x) => <option key={x} value={x}>{title(x)}</option>)}</Select>}
+                {view === 'open' && <Select aria-label="Case Status" value={filters.status} onChange={(e) => set('status', e.target.value)} className="w-44"><option value="">All Open Statuses</option>{['OPEN', 'IN_REVIEW', 'AWAITING_PROVIDER'].map((x) => <option key={x} value={x}>{title(x)}</option>)}</Select>}
                 {view === 'decided' && <Select aria-label="Decision" value={filters.status} onChange={(e) => set('status', e.target.value)} className="w-40"><option value="">All Decisions</option>{['APPROVED', 'REJECTED', 'CANCELLED'].map((x) => <option key={x} value={x}>{title(x)}</option>)}</Select>}
                 {anyFilter && <Button size="sm" variant="ghost" onClick={reset}>Clear</Button>}
               </>
@@ -130,7 +130,7 @@ function CaseQueueInner({ defaultView, heading, description, permission }: { def
           />
         </div>
       </Card>
-      {s && s.overdue > 0 && view !== 'overdue' && <p className="mt-3 flex items-center gap-1.5 text-xs text-red"><AlertTriangle size={12} aria-hidden /> {count(s.overdue)} case{s.overdue > 1 ? 's are' : ' is'} past the {s.slaHours}-hour target. <button type="button" className="underline underline-offset-2" onClick={() => setView('overdue')}>Show them</button></p>}
+      {s && s.overdue > 0 && view !== 'overdue' && <p className="mt-3 flex items-center gap-1.5 text-xs text-red"><AlertTriangle size={12} aria-hidden /> {count(s.overdue)} case{s.overdue > 1 ? 's are' : ' is'} past the {s.slaHours}-hour target. <button type="button" className="underline underline-offset-2" onClick={() => setView('overdue')}>Show Them</button></p>}
       <p className="mt-2 flex items-center gap-1.5 text-xs text-grey-500"><Clock size={12} aria-hidden /> Figures refresh every minute. Decisions are audited; a provider can never be verified by whoever registered it. Last refreshed {stats.dataUpdatedAt ? relative(new Date(stats.dataUpdatedAt).toISOString()) : '—'}.</p>
     </RequirePermission>
   );

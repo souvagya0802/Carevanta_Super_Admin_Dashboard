@@ -21,7 +21,7 @@ const PROVIDER_TYPES = ['DOCTOR', 'HOSPITAL', 'CLINIC', 'DIAGNOSTIC_LAB', 'IMAGI
 const STATUSES = ['DRAFT', 'PENDING_APPROVAL', 'ACTIVE', 'RETIRED'] as const;
 const FLOW = ['DRAFT', 'PENDING_APPROVAL', 'ACTIVE'] as const;
 const SAMPLE_AMOUNTS = [50_000, 200_000, 1_000_000]; // ₹500, ₹2,000, ₹10,000
-const scopeOf = (p: Pick<Policy, 'providerId' | 'providerType'>) => (p.providerId ? 'Provider-specific' : p.providerType ? `${title(p.providerType)} default` : 'Category default');
+const scopeOf = (p: Pick<Policy, 'providerId' | 'providerType'>) => (p.providerId ? 'Provider-specific' : p.providerType ? `${title(p.providerType)} default` : 'Category Default');
 const KEY_RE = /^[A-Z][A-Z0-9_]{2,63}$/;
 const normaliseCode = (raw: string) => raw.toUpperCase().replace(/[^A-Z0-9_]+/g, '_').replace(/_+/g, '_').replace(/^[^A-Z]+/, '').slice(0, 64);
 const toLocalInput = (iso: string) => { const d = new Date(iso); return new Date(d.getTime() - d.getTimezoneOffset() * 60_000).toISOString().slice(0, 16); };
@@ -43,12 +43,12 @@ export default function CommissionRulesPage() {
 
   return (
     <RequirePermission anyOf={['finance.read']}>
-      <PageHeader title="Commission rules" description="Effective-dated policies resolved from the most specific match: provider-specific → provider type → category default. Drafted by one person, activated by another; procedure and surgery policies also need recorded legal approval under NMC referral-commission rules." actions={can('finance.policies.manage') && <Button onClick={() => setCreating({})}><Plus size={16} /> New policy</Button>} />
+      <PageHeader title="Commission Rules" description="Effective-dated policies resolved from the most specific match: provider-specific → provider type → category default. Drafted by one person, activated by another; procedure and surgery policies also need recorded legal approval under NMC referral-commission rules." actions={can('finance.policies.manage') && <Button onClick={() => setCreating({})}><Plus size={16} /> New Policy</Button>} />
 
       <div className="mb-5 grid grid-cols-2 gap-3 xl:grid-cols-4">
-        <Kpi icon={CheckCircle2} accent="green" label="Active policies" value={stats.active} loading={all.isPending} />
-        <Kpi icon={Clock} accent="orange" label="Awaiting approval" value={stats.pending} loading={all.isPending} sub={stats.pending ? 'Needs a different approver than the author' : undefined} />
-        <Kpi icon={Scale} accent="red" label="High-risk without legal approval" value={stats.legal} loading={all.isPending} sub="Procedure / surgery" />
+        <Kpi icon={CheckCircle2} accent="green" label="Active Policies" value={stats.active} loading={all.isPending} />
+        <Kpi icon={Clock} accent="orange" label="Awaiting Approval" value={stats.pending} loading={all.isPending} sub={stats.pending ? 'Needs a different approver than the author' : undefined} />
+        <Kpi icon={Scale} accent="red" label="High-Risk Without Legal Approval" value={stats.legal} loading={all.isPending} sub="Procedure / Surgery" />
         <Kpi icon={FileText} accent="blue" label="Drafts" value={stats.drafts} loading={all.isPending} />
       </div>
 
@@ -57,26 +57,26 @@ export default function CommissionRulesPage() {
           <div className="flex flex-wrap items-center gap-2 border-b border-grey-100 px-5 py-3">
             <div className="relative min-w-0 flex-1 sm:max-w-xs">
               <Search size={15} aria-hidden className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-grey-400" />
-              <Input aria-label="Search policies" placeholder="Search code or name…" value={q} onChange={(e) => setQ(e.target.value)} className="pl-9" />
+              <Input aria-label="Search Policies" placeholder="Search code or name…" value={q} onChange={(e) => setQ(e.target.value)} className="pl-9" />
             </div>
-            <Select aria-label="Status" value={filters.status} onChange={(e) => set('status', e.target.value)} className="w-44"><option value="">All statuses</option>{STATUSES.map((s) => <option key={s} value={s}>{title(s)}</option>)}</Select>
-            <Select aria-label="Category" value={filters.category} onChange={(e) => set('category', e.target.value)} className="w-44"><option value="">All categories</option>{CATEGORIES.map((c) => <option key={c} value={c}>{title(c)}</option>)}</Select>
-            <label className="inline-flex items-center gap-2 text-xs"><input type="checkbox" className="accent-black" checked={latestOnly} onChange={(e) => setLatestOnly(e.target.checked)} /> Latest version only</label>
+            <Select aria-label="Status" value={filters.status} onChange={(e) => set('status', e.target.value)} className="w-44"><option value="">All Statuses</option>{STATUSES.map((s) => <option key={s} value={s}>{title(s)}</option>)}</Select>
+            <Select aria-label="Category" value={filters.category} onChange={(e) => set('category', e.target.value)} className="w-44"><option value="">All Categories</option>{CATEGORIES.map((c) => <option key={c} value={c}>{title(c)}</option>)}</Select>
+            <label className="inline-flex items-center gap-2 text-xs"><input type="checkbox" className="accent-black" checked={latestOnly} onChange={(e) => setLatestOnly(e.target.checked)} /> Latest Version Only</label>
           </div>
           {all.isPending ? <div className="p-5"><Skeleton rows={6} /></div> : visible.length === 0 ? (
-            <div className="p-5"><EmptyState title={list.length === 0 ? 'No commission policies yet' : 'No policies match'} description={list.length === 0 ? 'Start with a category default (e.g. 10% on consultations), then add provider-type or provider-specific overrides.' : 'Try another filter.'} action={list.length === 0 && can('finance.policies.manage') ? <Button onClick={() => setCreating({})}>Create the first policy</Button> : undefined} /></div>
+            <div className="p-5"><EmptyState title={list.length === 0 ? 'No Commission Policies Yet' : 'No Policies Match'} description={list.length === 0 ? 'Start with a category default (e.g. 10% on consultations), then add provider-type or provider-specific overrides.' : 'Try another filter.'} action={list.length === 0 && can('finance.policies.manage') ? <Button onClick={() => setCreating({})}>Create the First Policy</Button> : undefined} /></div>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="relative overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="text-left text-xs uppercase tracking-wide text-grey-500"><tr className="border-b border-grey-100"><th className="px-5 py-2.5 font-medium">Policy</th><th className="py-2.5 font-medium">Scope</th><th className="py-2.5 font-medium">Terms</th><th className="py-2.5 font-medium">Effective</th><th className="py-2.5 font-medium">Status</th></tr></thead>
+                <thead className="text-left text-xs text-grey-500"><tr className="border-b border-grey-100"><th className="px-5 py-2.5 font-medium">Policy</th><th className="py-2.5 font-medium">Scope</th><th className="py-2.5 font-medium">Terms</th><th className="py-2.5 font-medium">Effective</th><th className="py-2.5 font-medium">Status</th></tr></thead>
                 <tbody>
                   {visible.map((p) => (
                     <tr key={p.id} onClick={() => setSelected(p)} className="cursor-pointer border-b border-grey-100 last:border-0 hover:bg-grey-50">
                       <td className="px-5 py-3"><p className="font-medium">{p.name}</p><p className="font-mono text-[11px] text-grey-500">{p.code} · v{p.version}{latestVersion.get(p.code) !== p.version && <span className="ml-1 text-grey-400">(superseded)</span>}</p></td>
-                      <td className="py-3"><p className="text-xs">{scopeOf(p)}</p><p className="flex items-center gap-1 text-xs text-grey-500">{title(p.category)}{p.highRisk && <AlertTriangle size={11} className="text-red" aria-label="high risk" />}</p></td>
+                      <td className="py-3"><p className="text-xs">{scopeOf(p)}</p><p className="flex items-center gap-1 text-xs text-grey-500">{title(p.category)}{p.highRisk && <AlertTriangle size={11} className="text-red" aria-label="High Risk" />}</p></td>
                       <td className="py-3 text-xs">{describeTerms(p)}</td>
                       <td className="py-3 text-xs text-grey-600">{dateTime(p.effectiveFrom)}<br />{p.effectiveTo ? `to ${dateTime(p.effectiveTo)}` : 'open-ended'}</td>
-                      <td className="py-3"><Badge>{p.status}</Badge>{p.highRisk && <p className="mt-1"><Badge accent={p.legalReviewStatus === 'APPROVED' ? 'green' : p.legalReviewStatus === 'REJECTED' ? 'red' : 'orange'}>legal: {p.legalReviewStatus.replace(/_/g, ' ').toLowerCase()}</Badge></p>}</td>
+                      <td className="py-3"><Badge>{p.status}</Badge>{p.highRisk && <p className="mt-1"><Badge accent={p.legalReviewStatus === 'APPROVED' ? 'green' : p.legalReviewStatus === 'REJECTED' ? 'red' : 'orange'}>legal: {title(p.legalReviewStatus)}</Badge></p>}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -122,11 +122,11 @@ function PolicyDialog({ policy: p, versions, onClose, onChanged, onNewVersion }:
   return (
     <Dialog open onClose={onClose} size="lg" icon={p.highRisk ? ShieldAlert : Percent} title={p.name} description={`${p.code} · version ${p.version} · ${scopeOf(p)} · ${title(p.category)}`}
       footer={<>
-        {can('finance.policies.manage') && p.status === 'DRAFT' && <Button onClick={() => setAction('submit')}>Submit for approval</Button>}
-        {can('finance.policies.legal_review') && p.status !== 'RETIRED' && <Button variant="secondary" onClick={() => { setLegal('APPROVED'); setReason(''); setAction('legal'); }}><Gavel size={14} /> Record legal review</Button>}
+        {can('finance.policies.manage') && p.status === 'DRAFT' && <Button onClick={() => setAction('submit')}>Submit for Approval</Button>}
+        {can('finance.policies.legal_review') && p.status !== 'RETIRED' && <Button variant="secondary" onClick={() => { setLegal('APPROVED'); setReason(''); setAction('legal'); }}><Gavel size={14} /> Record Legal Review</Button>}
         {can('finance.policies.approve') && p.status === 'PENDING_APPROVAL' && <Button onClick={() => setAction('activate')} disabled={!canActivate} title={blockers.join(' ')}>Activate</Button>}
         {can('finance.policies.approve') && p.status === 'ACTIVE' && <Button variant="danger" onClick={() => { setReason(''); setAction('retire'); }}>Retire</Button>}
-        {can('finance.policies.manage') && p.status !== 'DRAFT' && <Button variant="secondary" onClick={onNewVersion}>New version</Button>}
+        {can('finance.policies.manage') && p.status !== 'DRAFT' && <Button variant="secondary" onClick={onNewVersion}>New Version</Button>}
         <Button variant="ghost" onClick={onClose}>Close</Button>
       </>}>
       <div className="space-y-4">
@@ -136,39 +136,39 @@ function PolicyDialog({ policy: p, versions, onClose, onChanged, onNewVersion }:
         {blockers.length > 0 && <div className="space-y-1 rounded-xl bg-orange-soft px-3 py-2 text-xs text-grey-800">{blockers.map((b) => <p key={b} className="flex items-start gap-2"><AlertTriangle size={12} className="mt-0.5 shrink-0 text-orange" aria-hidden />{b}</p>)}</div>}
         <DescriptionList items={[
           { label: 'Terms', value: describeTerms(p) },
-          { label: 'Tax on commission', value: fmtBps(p.taxRateBps) },
-          { label: 'Effective from', value: dateTime(p.effectiveFrom) },
-          { label: 'Effective to', value: p.effectiveTo ? dateTime(p.effectiveTo) : 'Open-ended' },
+          { label: 'Tax on Commission', value: fmtBps(p.taxRateBps) },
+          { label: 'Effective From', value: dateTime(p.effectiveFrom) },
+          { label: 'Effective To', value: p.effectiveTo ? dateTime(p.effectiveTo) : 'Open-ended' },
           { label: 'Scope', value: p.providerId ? <span>Provider <span className="font-mono text-xs">{shortId(p.providerId)}</span>{p.agreementId ? ` · agreement ${shortId(p.agreementId)}` : ''}</span> : scopeOf(p) },
-          { label: 'Legal review', value: <span><Badge accent={p.legalReviewStatus === 'APPROVED' ? 'green' : p.legalReviewStatus === 'REJECTED' ? 'red' : p.legalReviewStatus === 'UNDER_REVIEW' ? 'orange' : 'ink'}>{p.legalReviewStatus.replace(/_/g, ' ')}</Badge>{p.legalReviewNote && <span className="ml-2 text-xs text-grey-600">{p.legalReviewNote}</span>}</span> },
+          { label: 'Legal Review', value: <span><Badge accent={p.legalReviewStatus === 'APPROVED' ? 'green' : p.legalReviewStatus === 'REJECTED' ? 'red' : p.legalReviewStatus === 'UNDER_REVIEW' ? 'orange' : 'ink'}>{title(p.legalReviewStatus)}</Badge>{p.legalReviewNote && <span className="ml-2 text-xs text-grey-600">{p.legalReviewNote}</span>}</span> },
           { label: 'Drafted', value: `${dateTime(p.createdAt)} by ${isAuthor ? 'you' : shortId(p.createdById)}` },
           { label: 'Approved', value: p.approvedAt ? `${dateTime(p.approvedAt)} by ${shortId(p.approvedById)}` : '—' },
         ]} />
         <div className="rounded-xl border border-grey-200">
-          <p className="border-b border-grey-100 bg-grey-50 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-grey-600">Worked examples</p>
-          <table className="w-full text-xs"><thead className="text-left text-grey-500"><tr><th className="px-3 py-1.5 font-medium">Service value</th><th className="py-1.5 font-medium">Commission</th><th className="py-1.5 font-medium">Tax</th><th className="py-1.5 pr-3 font-medium">Provider receives</th></tr></thead>
+          <p className="border-b border-grey-100 bg-grey-50 px-3 py-2 text-xs font-semibold text-grey-600">Worked Examples</p>
+          <table className="w-full text-xs"><thead className="text-left text-grey-500"><tr><th className="px-3 py-1.5 font-medium">Service Value</th><th className="py-1.5 font-medium">Commission</th><th className="py-1.5 font-medium">Tax</th><th className="py-1.5 pr-3 font-medium">Provider Receives</th></tr></thead>
             <tbody>{samples.map(({ a, r }) => <tr key={a} className="tnum border-t border-grey-100"><td className="px-3 py-1.5">{money(a)}</td><td className="py-1.5">{money(r.commissionMinor)}</td><td className="py-1.5">{money(r.taxMinor)}</td><td className="py-1.5 pr-3 font-medium">{money(r.providerNetMinor)}</td></tr>)}</tbody></table>
         </div>
         {versions.length > 1 && (
           <div>
-            <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-grey-500">Versions of {p.code}</p>
+            <p className="mb-1.5 text-xs font-semibold text-grey-500">Versions of {p.code}</p>
             <ul className="divide-y divide-grey-100 rounded-xl border border-grey-200 text-xs">{[...versions].sort((a, b) => b.version - a.version).map((v) => <li key={v.id} className={cx('flex items-center justify-between gap-2 px-3 py-2', v.id === p.id && 'bg-grey-50')}><span>v{v.version} · {describeTerms(v)}</span><span className="flex items-center gap-2 text-grey-500"><Badge>{v.status}</Badge>{relative(v.createdAt)}</span></li>)}</ul>
           </div>
         )}
       </div>
 
-      <ConfirmDialog open={action === 'submit'} onClose={() => setAction(null)} onConfirm={() => submit.mutate()} loading={submit.isPending} title="Submit for approval?" confirmLabel="Submit" message="The policy becomes read-only. Someone with approval rights other than you must activate it." />
-      <ConfirmDialog open={action === 'activate'} onClose={() => setAction(null)} onConfirm={() => activate.mutate()} loading={activate.isPending} title="Activate this policy?" confirmLabel="Activate" message={`From ${dateTime(p.effectiveFrom)} every new completed ${title(p.category).toLowerCase()} transaction in scope will use these terms. Commission already snapshotted on past transactions is not affected.`}>
+      <ConfirmDialog open={action === 'submit'} onClose={() => setAction(null)} onConfirm={() => submit.mutate()} loading={submit.isPending} title="Submit for Approval?" confirmLabel="Submit" message="The policy becomes read-only. Someone with approval rights other than you must activate it." />
+      <ConfirmDialog open={action === 'activate'} onClose={() => setAction(null)} onConfirm={() => activate.mutate()} loading={activate.isPending} title="Activate This Policy?" confirmLabel="Activate" message={`From ${dateTime(p.effectiveFrom)} every new completed ${title(p.category).toLowerCase()} transaction in scope will use these terms. Commission already snapshotted on past transactions is not affected.`}>
         {overlapping.length > 0 && <div className="mt-3 space-y-2 text-xs"><p className="rounded-xl bg-orange-soft px-3 py-2 text-grey-800">Version {overlapping.map((v) => `v${v.version}`).join(', ')} of this code is ACTIVE and may overlap this period. The server rejects overlapping active policies unless you supersede.</p><Checkbox label="Supersede the overlapping version (it is retired as this one starts)" checked={supersede} onChange={(e) => setSupersede(e.target.checked)} /></div>}
       </ConfirmDialog>
-      <ConfirmDialog open={action === 'retire'} onClose={() => setAction(null)} onConfirm={() => retire.mutate()} loading={retire.isPending} danger title="Retire this policy?" confirmLabel="Retire" message="Future transactions stop using it immediately and fall back to the next most specific policy, if any. Historical commission snapshots are unchanged.">
+      <ConfirmDialog open={action === 'retire'} onClose={() => setAction(null)} onConfirm={() => retire.mutate()} loading={retire.isPending} danger title="Retire This Policy?" confirmLabel="Retire" message="Future transactions stop using it immediately and fall back to the next most specific policy, if any. Historical commission snapshots are unchanged.">
         <Field label="Reason" required className="mt-3" hint="At least 5 characters · audited"><Textarea value={reason} onChange={(e) => setReason(e.target.value)} className="min-h-16" /></Field>
         {reason.trim().length < 5 && <p className="mt-1 text-xs text-grey-500">Enter a reason to enable Retire.</p>}
       </ConfirmDialog>
-      <Dialog open={action === 'legal'} onClose={() => setAction(null)} icon={Gavel} title="Record legal / compliance review" description={`${p.code} v${p.version} · ${title(p.category)}`} footer={<><Button variant="ghost" onClick={() => setAction(null)}>Cancel</Button><Button onClick={() => review.mutate()} loading={review.isPending} disabled={reason.trim().length < 5}>Record outcome</Button></>}>
+      <Dialog open={action === 'legal'} onClose={() => setAction(null)} icon={Gavel} title="Record Legal / Compliance Review" description={`${p.code} v${p.version} · ${title(p.category)}`} footer={<><Button variant="ghost" onClick={() => setAction(null)}>Cancel</Button><Button onClick={() => review.mutate()} loading={review.isPending} disabled={reason.trim().length < 5}>Record Outcome</Button></>}>
         <div className="space-y-3">
           {p.highRisk && <p className="rounded-xl bg-red-soft px-3 py-2 text-xs text-grey-800">Commission on procedures and surgery can be construed as a referral fee under the NMC code of conduct. Record counsel’s written opinion reference in the note.</p>}
-          <Field label="Outcome" required><Select value={legal} onChange={(e) => setLegal(e.target.value as typeof legal)}><option value="UNDER_REVIEW">Under review</option><option value="APPROVED">Approved</option><option value="REJECTED">Rejected</option></Select></Field>
+          <Field label="Outcome" required><Select value={legal} onChange={(e) => setLegal(e.target.value as typeof legal)}><option value="UNDER_REVIEW">Under Review</option><option value="APPROVED">Approved</option><option value="REJECTED">Rejected</option></Select></Field>
           <Field label="Note" required hint="Opinion reference, reviewer and date · at least 5 characters"><Textarea value={reason} onChange={(e) => setReason(e.target.value)} className="min-h-20" /></Field>
         </div>
       </Dialog>
@@ -224,8 +224,8 @@ function PolicyEditor({ from, existing, onClose, onCreated }: { from?: Policy; e
   }), { success: codeExists ? `Draft v${nextVersion} created` : 'Policy drafted', onSuccess: onCreated, onError: (err) => { if (err instanceof ApiError) { setServerError(err.message); setFieldErrors(err.fieldErrors ?? {}); } } });
 
   return (
-    <Dialog open onClose={close} size="full" icon={Percent} title={from ? `New version of ${from.code}` : 'New commission policy'} description="Saved as a DRAFT. Submit it for approval when the terms are final; a different approver activates it."
-      footer={<div className="flex w-full flex-wrap items-center justify-between gap-3"><span className="text-xs text-grey-600">{f.code ? (codeExists ? `Will be created as version ${nextVersion} of ${f.code}` : `New code ${f.code} · version 1`) : 'Enter a code'}</span><div className="flex gap-2"><Button variant="ghost" onClick={close}>Cancel</Button><Button onClick={() => create.mutate()} loading={create.isPending} disabled={invalid}>Save draft</Button></div></div>}>
+    <Dialog open onClose={close} size="full" icon={Percent} title={from ? `New version of ${from.code}` : 'New Commission Policy'} description="Saved as a DRAFT. Submit it for approval when the terms are final; a different approver activates it."
+      footer={<div className="flex w-full flex-wrap items-center justify-between gap-3"><span className="text-xs text-grey-600">{f.code ? (codeExists ? `Will be created as version ${nextVersion} of ${f.code}` : `New code ${f.code} · version 1`) : 'Enter a code'}</span><div className="flex gap-2"><Button variant="ghost" onClick={close}>Cancel</Button><Button onClick={() => create.mutate()} loading={create.isPending} disabled={invalid}>Save Draft</Button></div></div>}>
       <div className="grid gap-4 xl:grid-cols-[1fr_380px]">
         <div className="space-y-4">
           {serverError && <p role="alert" className="rounded-xl bg-red-soft px-3 py-2 text-xs text-red">{serverError}</p>}
@@ -238,40 +238,40 @@ function PolicyEditor({ from, existing, onClose, onCreated }: { from?: Policy; e
           </FormSection>
           <FormSection title="Scope" icon={Scale} accent="purple" hint="A transaction uses the most specific ACTIVE policy for its category: provider-specific beats provider-type beats category default.">
             <div className="grid gap-3 md:grid-cols-2">
-              <Field label="Service category" required><Select value={f.category} onChange={(x) => setF({ ...f, category: x.target.value as typeof f.category })}>{CATEGORIES.map((c) => <option key={c} value={c}>{title(c)}{HIGH_RISK.includes(c) ? ' (high risk)' : ''}</option>)}</Select></Field>
-              <Field label="Applies to" required>
-                <Select value={f.scope} onChange={(x) => setF({ ...f, scope: x.target.value as typeof f.scope })}><option value="category">Every provider (category default)</option><option value="type">One provider type</option><option value="provider">One specific provider</option></Select>
+              <Field label="Service Category" required><Select value={f.category} onChange={(x) => setF({ ...f, category: x.target.value as typeof f.category })}>{CATEGORIES.map((c) => <option key={c} value={c}>{title(c)}{HIGH_RISK.includes(c) ? ' (high risk)' : ''}</option>)}</Select></Field>
+              <Field label="Applies To" required>
+                <Select value={f.scope} onChange={(x) => setF({ ...f, scope: x.target.value as typeof f.scope })}><option value="category">Every provider (category default)</option><option value="type">One Provider Type</option><option value="provider">One Specific Provider</option></Select>
               </Field>
-              {f.scope === 'type' && <Field label="Provider type" required><Select value={f.providerType} onChange={(x) => setF({ ...f, providerType: x.target.value })}>{PROVIDER_TYPES.map((t) => <option key={t} value={t}>{title(t)}</option>)}</Select></Field>}
-              {f.scope === 'provider' && <><Field label="Provider" required error={e.provider}><ProviderPicker value={provider} onChange={setProvider} /></Field><Field label="Agreement id" error={e.agreement} hint="Optional · links the policy to a signed commercial agreement"><Input value={f.agreementId} onChange={(x) => setF({ ...f, agreementId: x.target.value.trim() })} className="font-mono" /></Field></>}
+              {f.scope === 'type' && <Field label="Provider Type" required><Select value={f.providerType} onChange={(x) => setF({ ...f, providerType: x.target.value })}>{PROVIDER_TYPES.map((t) => <option key={t} value={t}>{title(t)}</option>)}</Select></Field>}
+              {f.scope === 'provider' && <><Field label="Provider" required error={e.provider}><ProviderPicker value={provider} onChange={setProvider} /></Field><Field label="Agreement ID" error={e.agreement} hint="Optional · links the policy to a signed commercial agreement"><Input value={f.agreementId} onChange={(x) => setF({ ...f, agreementId: x.target.value.trim() })} className="font-mono" /></Field></>}
             </div>
             {highRisk && <p className="mt-3 flex items-start gap-2 rounded-xl bg-red-soft px-3 py-2 text-xs text-grey-800"><ShieldAlert size={14} className="mt-0.5 shrink-0 text-red" aria-hidden />Procedure and surgery commissions are high risk under NMC rules on referral fees. This policy cannot be activated until a legal review is recorded as approved.</p>}
           </FormSection>
           <FormSection title="Terms" icon={Percent} accent="green" hint="Percentages are stored as basis points and rounded half-up; commission never exceeds the service value.">
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-              <Field label="Method" required><Select value={f.method} onChange={(x) => setF({ ...f, method: x.target.value as typeof f.method })}><option value="PERCENTAGE">Percentage of service value</option><option value="FLAT">Flat amount per transaction</option></Select></Field>
-              {f.method === 'PERCENTAGE' ? <Field label="Rate (%)" required error={e.rate} hint="Up to 2 decimals"><Input type="number" min={0} max={100} step="0.01" value={f.ratePct} onChange={(x) => setF({ ...f, ratePct: x.target.value })} /></Field> : <Field label="Flat amount (₹)" required error={e.flat}><Input type="number" min={0} step="0.01" value={f.flat} onChange={(x) => setF({ ...f, flat: x.target.value })} /></Field>}
-              <Field label="Tax on commission (%)" required error={e.tax} hint="GST charged on the platform fee, if applicable"><Input type="number" min={0} max={100} step="0.01" value={f.taxPct} onChange={(x) => setF({ ...f, taxPct: x.target.value })} /></Field>
-              <Field label="Minimum commission (₹)" error={e.min} hint="Optional floor"><Input type="number" min={0} step="0.01" value={f.min} onChange={(x) => setF({ ...f, min: x.target.value })} /></Field>
-              <Field label="Maximum commission (₹)" error={e.max} hint="Optional cap"><Input type="number" min={0} step="0.01" value={f.max} onChange={(x) => setF({ ...f, max: x.target.value })} /></Field>
+              <Field label="Method" required><Select value={f.method} onChange={(x) => setF({ ...f, method: x.target.value as typeof f.method })}><option value="PERCENTAGE">Percentage of Service Value</option><option value="FLAT">Flat Amount per Transaction</option></Select></Field>
+              {f.method === 'PERCENTAGE' ? <Field label="Rate (%)" required error={e.rate} hint="Up to 2 decimals"><Input type="number" min={0} max={100} step="0.01" value={f.ratePct} onChange={(x) => setF({ ...f, ratePct: x.target.value })} /></Field> : <Field label="Flat Amount (₹)" required error={e.flat}><Input type="number" min={0} step="0.01" value={f.flat} onChange={(x) => setF({ ...f, flat: x.target.value })} /></Field>}
+              <Field label="Tax on Commission (%)" required error={e.tax} hint="GST charged on the platform fee, if applicable"><Input type="number" min={0} max={100} step="0.01" value={f.taxPct} onChange={(x) => setF({ ...f, taxPct: x.target.value })} /></Field>
+              <Field label="Minimum Commission (₹)" error={e.min} hint="Optional floor"><Input type="number" min={0} step="0.01" value={f.min} onChange={(x) => setF({ ...f, min: x.target.value })} /></Field>
+              <Field label="Maximum Commission (₹)" error={e.max} hint="Optional cap"><Input type="number" min={0} step="0.01" value={f.max} onChange={(x) => setF({ ...f, max: x.target.value })} /></Field>
             </div>
           </FormSection>
-          <FormSection title="Effective period" icon={Clock} accent="orange" hint="Policies are effective-dated; overlapping ACTIVE policies in the same scope are rejected unless superseded on activation.">
+          <FormSection title="Effective Period" icon={Clock} accent="orange" hint="Policies are effective-dated; overlapping ACTIVE policies in the same scope are rejected unless superseded on activation.">
             <div className="grid gap-3 md:grid-cols-2">
-              <Field label="Effective from" required error={e.from}><Input type="datetime-local" value={f.effectiveFrom} onChange={(x) => setF({ ...f, effectiveFrom: x.target.value })} /></Field>
-              <Field label="Effective to" error={e.to} hint="Leave empty for open-ended"><Input type="datetime-local" value={f.effectiveTo} min={f.effectiveFrom} onChange={(x) => setF({ ...f, effectiveTo: x.target.value })} /></Field>
+              <Field label="Effective From" required error={e.from}><Input type="datetime-local" value={f.effectiveFrom} onChange={(x) => setF({ ...f, effectiveFrom: x.target.value })} /></Field>
+              <Field label="Effective To" error={e.to} hint="Leave empty for open-ended"><Input type="datetime-local" value={f.effectiveTo} min={f.effectiveFrom} onChange={(x) => setF({ ...f, effectiveTo: x.target.value })} /></Field>
             </div>
           </FormSection>
         </div>
-        <FormSection title="Live preview" icon={Calculator} accent="teal" hint="Exactly what the server will compute with these terms.">
+        <FormSection title="Live Preview" icon={Calculator} accent="teal" hint="Exactly what the server will compute with these terms.">
           <p className="mb-3 text-xs text-grey-600">{invalid && !e.rate && !e.flat && !e.tax && !e.max ? 'Fill in the terms to preview.' : describeTerms(terms)}</p>
           <div className="space-y-3">
             {SAMPLE_AMOUNTS.map((a) => { const r = calcCommission(terms, a); return (
               <div key={a} className="rounded-xl border border-grey-200 p-3">
                 <p className="mb-1 text-xs font-semibold text-grey-700">Service value {money(a)}</p>
-                <AmountRow label="Platform commission" minor={r.commissionMinor} negative />
-                <AmountRow label="Tax on commission" minor={r.taxMinor} negative />
-                <AmountRow label="Provider receives" minor={r.providerNetMinor} strong />
+                <AmountRow label="Platform Commission" minor={r.commissionMinor} negative />
+                <AmountRow label="Tax on Commission" minor={r.taxMinor} negative />
+                <AmountRow label="Provider Receives" minor={r.providerNetMinor} strong />
               </div>
             ); })}
           </div>
@@ -291,25 +291,25 @@ function PreviewCalculator() {
   const preview = useAction(() => api.post<{ data: Preview }>('/admin/finance/commission-policies/preview', { category, providerId: provider!.id, amountMinor: minor, ...(at ? { at: new Date(at).toISOString() } : {}) }));
   const r = preview.data?.data;
   return (
-    <Card title="Preview a calculation" description="Resolves the policy that would apply to a real provider and amount.">
+    <Card title="Preview a Calculation" description="Resolves the policy that would apply to a real provider and amount.">
       <div className="space-y-3">
         <Field label="Category"><Select value={category} onChange={(e) => setCategory(e.target.value as typeof category)}>{CATEGORIES.map((c) => <option key={c} value={c}>{title(c)}</option>)}</Select></Field>
         <Field label="Provider" required><ProviderPicker value={provider} onChange={setProvider} /></Field>
-        <Field label="Service value (₹)" required error={amount && minor == null ? 'Enter a valid amount' : undefined}><Input type="number" min={0} step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} /></Field>
-        <Field label="As of" hint="Defaults to now"><Input type="datetime-local" value={at} onChange={(e) => setAt(e.target.value)} /></Field>
+        <Field label="Service Value (₹)" required error={amount && minor == null ? 'Enter a valid amount' : undefined}><Input type="number" min={0} step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} /></Field>
+        <Field label="As Of" hint="Defaults to now"><Input type="datetime-local" value={at} onChange={(e) => setAt(e.target.value)} /></Field>
         <Button className="w-full" onClick={() => preview.mutate()} loading={preview.isPending} disabled={!provider || minor == null || minor <= 0}><Calculator size={16} /> Preview</Button>
         {r && (r.policy && r.result ? (
           <div className="rounded-xl border border-grey-200 p-3">
             <p className="text-xs text-grey-600">Applies: <span className="font-medium text-ink">{r.policy.name}</span> <span className="font-mono">{r.policy.code} v{r.policy.version}</span> · {scopeOf(r.policy)}</p>
             <div className="mt-2">
-              <AmountRow label="Service value" minor={r.result.baseMinor} />
+              <AmountRow label="Service Value" minor={r.result.baseMinor} />
               <AmountRow label="Commission" minor={r.result.commissionMinor} negative hint={describeTerms(r.policy)} />
               <AmountRow label="Tax" minor={r.result.taxMinor} negative />
-              <AmountRow label="Provider receives" minor={r.result.providerNetMinor} strong />
+              <AmountRow label="Provider Receives" minor={r.result.providerNetMinor} strong />
             </div>
           </div>
         ) : (
-          <div className="rounded-xl bg-orange-soft px-3 py-2 text-xs text-grey-800"><p className="font-medium text-orange">No active policy applies</p><p>No commission would be charged on this transaction. Create a {title(category).toLowerCase()} default or a provider-specific policy.</p></div>
+          <div className="rounded-xl bg-orange-soft px-3 py-2 text-xs text-grey-800"><p className="font-medium text-orange">No Active Policy Applies</p><p>No commission would be charged on this transaction. Create a {title(category).toLowerCase()} default or a provider-specific policy.</p></div>
         ))}
       </div>
     </Card>

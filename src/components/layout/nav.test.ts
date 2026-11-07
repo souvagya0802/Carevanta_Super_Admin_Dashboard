@@ -2,8 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { NAV, visibleNav } from './nav';
 
 describe('navigation', () => {
-  it('lists all 26 required areas', () => {
-    expect(NAV).toHaveLength(26);
+  it('lists all 27 required areas', () => {
+    expect(NAV).toHaveLength(27);
+    expect(NAV.map((n) => n.href)).toContain('/reviews');
     expect(NAV.map((n) => n.href)).toContain('/commission-rules');
   });
   it('hides items the user lacks permission for', () => {

@@ -2,8 +2,10 @@
  * Typed client for the Carevanta API.
  *  - Access token kept in memory; refresh token in localStorage (no cookies →
  *    no CSRF surface; the API enforces CORS and all authorisation server-side).
- *  - A 401 triggers one single-flight refresh and a retry; a failed refresh
- *    clears the session and notifies listeners (the auth provider redirects).
+ *  - A 401 triggers one single-flight refresh and a retry. Only a refresh the
+ *    API rejects (401/403) clears the session and notifies listeners (the auth
+ *    provider redirects); throttling (429), server errors and network failures
+ *    keep the session so a busy API never signs the user out.
  *  - Errors are normalised to ApiError with the API's error code and details.
  */
 export const API_BASE = (process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000').replace(/\/$/, '');
@@ -83,9 +85,16 @@ export const session = {
   },
 };
 
+/**
+ * Swap the refresh token for a new pair. Refresh tokens are single-use, so
+ * when the app is open in two tabs (or the installed app and a browser tab)
+ * only one may refresh at a time: the browser lock makes the second tab wait,
+ * then it reads the token the first tab just stored instead of re-using the
+ * old one. The API also tolerates a just-replaced token for a few seconds.
+ */
 async function refresh(): Promise<boolean> {
   if (refreshInFlight) return refreshInFlight;
-  refreshInFlight = (async () => {
+  const run = async (): Promise<boolean> => {
     let token: string | null = null;
     try {
       token = localStorage.getItem(REFRESH_KEY);
@@ -100,18 +109,31 @@ async function refresh(): Promise<boolean> {
         body: JSON.stringify({ refreshToken: token }),
       });
       if (!res.ok) {
-        session.clear();
-        return false;
+        // 429, 5xx and anything else that is not a rejection: keep the session, try again later.
+        if (res.status !== 401 && res.status !== 403) return false;
+        // Only sign out if no other tab replaced the token while we were asking.
+        let current: string | null = null;
+        try {
+          current = localStorage.getItem(REFRESH_KEY);
+        } catch {
+          /* ignore */
+        }
+        if (current === token) session.clear();
+        return current !== token && !!current ? run() : false;
       }
       const { data } = (await res.json()) as { data: { accessToken: string; refreshToken: string } };
       session.set(data);
       return true;
     } catch {
+      // Network failure: keep the session.
       return false;
-    } finally {
-      refreshInFlight = null;
     }
-  })();
+  };
+  const locks = typeof navigator !== 'undefined' && 'locks' in navigator ? navigator.locks : undefined;
+  // A lock callback's promise is awaited by the browser, so the request resolves to the boolean itself.
+  refreshInFlight = (locks ? (locks.request('carevanta-token-refresh', run) as unknown as Promise<boolean>) : run()).finally(() => {
+    refreshInFlight = null;
+  });
   return refreshInFlight;
 }
 
@@ -158,7 +180,9 @@ export async function request<T>(path: string, opts: RequestOptions = {}): Promi
   }
   if (!res.ok) {
     const err = (json as { error?: ApiErrorBody } | null)?.error ?? { code: 'HTTP_ERROR', message: res.statusText || 'Request failed' };
-    if (res.status === 401) session.clear();
+    // Sign out only when the credentials are really gone: the refresh was rejected (token cleared),
+    // or a freshly refreshed token was refused. A throttled or failed refresh keeps the session.
+    if (res.status === 401 && (opts.anonymous || opts._retried || !session.hasRefreshToken())) session.clear();
     throw new ApiError(res.status, err);
   }
   return json as T;

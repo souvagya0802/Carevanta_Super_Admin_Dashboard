@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Suspense, useMemo, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import type { ColumnDef } from '@tanstack/react-table';
-import { AlertOctagon, Gavel, Globe2, Landmark, Mail, MapPinned, Palette, Plus, Settings2, ShieldAlert, type LucideIcon } from 'lucide-react';
+import { AlertOctagon, BellRing, CreditCard, Gavel, Globe2, Landmark, LayoutTemplate, Mail, MapPinned, Palette, Plus, Settings2, ShieldAlert, Smartphone, type LucideIcon } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { useAction, useGet } from '@/lib/hooks';
@@ -14,6 +14,10 @@ import { Badge, Button, Card, ConfirmDialog, DescriptionList, Dialog, EmptyState
 import { RequirePermission } from '@/components/layout/shell';
 import { BrandingSettings, SmtpSettings } from '@/components/settings/integrations';
 import { RegistrySettings } from '@/components/settings/registries';
+import { PortalConfig } from '@/components/settings/portal-config';
+import { PaymentsSettings } from '@/components/settings/payments';
+import { PushSettings } from '@/components/settings/push';
+import { PatientAppSettings } from '@/components/settings/patient-app';
 import { PlatformSettings } from '@/components/settings/platform-settings';
 import { LocationFields, EMPTY_ADDRESS, type AddressValue } from '@/components/forms/location-fields';
 import { HOME_COUNTRY } from '@/lib/geo';
@@ -27,6 +31,10 @@ const TABS: { key: string; label: string; icon: LucideIcon; permission?: string 
   { key: 'branding', label: 'Branding', icon: Palette },
   { key: 'email', label: 'Email (SMTP)', icon: Mail },
   { key: 'registries', label: 'Registries', icon: Landmark },
+  { key: 'portal', label: 'Provider Portal', icon: LayoutTemplate },
+  { key: 'payments', label: 'Payments', icon: CreditCard },
+  { key: 'push', label: 'Push', icon: BellRing },
+  { key: 'patient', label: 'Patient App', icon: Smartphone },
   { key: 'regions', label: 'Service Regions', icon: MapPinned },
   { key: 'holds', label: 'Legal Holds', icon: Gavel, permission: 'compliance.manage' },
   { key: 'incidents', label: 'Incidents', icon: ShieldAlert, permission: 'compliance.manage' },
@@ -47,7 +55,7 @@ function SettingsInner() {
   return (
     <RequirePermission anyOf={['settings.read']}>
       <PageHeader title="Platform Settings" description="Operational defaults, branding, outbound email, registry connectors, launch regions and compliance records. Every change here is versioned and written to the audit log with a reason." />
-      <nav aria-label="Settings sections" className="mb-5 flex gap-1 overflow-x-auto rounded-2xl border border-grey-200 bg-paper p-1 shadow-[var(--shadow-card)]">
+      <nav aria-label="Settings Sections" className="relative mb-5 flex gap-1 overflow-x-auto rounded-2xl border border-grey-200 bg-paper p-1 shadow-[var(--shadow-card)]">
         {tabs.map((t) => (
           <button key={t.key} type="button" role="tab" aria-selected={tab === t.key} onClick={() => setTab(t.key)} className={cx('inline-flex shrink-0 items-center gap-2 rounded-xl px-3.5 py-2 text-sm transition-colors', tab === t.key ? 'bg-ink font-medium text-paper shadow-sm' : 'text-grey-600 hover:bg-grey-100 hover:text-ink')}>
             <t.icon size={15} aria-hidden /> {t.label}
@@ -58,6 +66,10 @@ function SettingsInner() {
       {tab === 'branding' && <BrandingSettings />}
       {tab === 'email' && <SmtpSettings />}
       {tab === 'registries' && <RegistrySettings />}
+      {tab === 'portal' && <PortalConfig />}
+      {tab === 'payments' && <PaymentsSettings />}
+      {tab === 'push' && <PushSettings />}
+      {tab === 'patient' && <PatientAppSettings />}
       {tab === 'regions' && <Regions />}
       {tab === 'holds' && <Holds />}
       {tab === 'incidents' && <Incidents />}
@@ -82,11 +94,11 @@ function Regions() {
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         {REGION_STATUSES.map((s) => <div key={s} className="rounded-2xl border border-grey-200 bg-paper px-4 py-3 shadow-[var(--shadow-card)]"><p className="tnum text-lg font-bold leading-tight">{regions.data ? byStatus[s] : '—'}</p><p className="text-[11px] text-grey-500">{title(s)}</p></div>)}
       </div>
-      <Card title="Service regions" description="Launch areas (a town, block or district) that providers, dispatch and reporting are grouped by. The pilot starts with Moyna and Tamluk; add any Indian area the same way." actions={manage && <Button size="sm" onClick={() => setAdding(true)}><Plus size={14} /> Add region</Button>} padded={false}>
-        {regions.isPending ? <div className="p-5"><Skeleton /></div> : regions.isError ? <div className="p-5"><ErrorState error={regions.error} retry={() => regions.refetch()} /></div> : regions.data.length === 0 ? <div className="p-5"><EmptyState title="No service regions yet" description="Add the first launch area to start grouping providers." action={manage ? <Button onClick={() => setAdding(true)}>Add region</Button> : undefined} /></div> : (
-          <div className="overflow-x-auto">
+      <Card title="Service Regions" description="Launch areas (a town, block or district) that providers, dispatch and reporting are grouped by. The pilot starts with Moyna and Tamluk; add any Indian area the same way." actions={manage && <Button size="sm" onClick={() => setAdding(true)}><Plus size={14} /> Add Region</Button>} padded={false}>
+        {regions.isPending ? <div className="p-5"><Skeleton /></div> : regions.isError ? <div className="p-5"><ErrorState error={regions.error} retry={() => regions.refetch()} /></div> : regions.data.length === 0 ? <div className="p-5"><EmptyState title="No Service Regions Yet" description="Add the first launch area to start grouping providers." action={manage ? <Button onClick={() => setAdding(true)}>Add Region</Button> : undefined} /></div> : (
+          <div className="relative overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="text-left text-xs uppercase tracking-wide text-grey-500"><tr className="border-b border-grey-100"><th className="px-5 py-2.5 font-medium">Region</th><th className="py-2.5 font-medium">District / state</th><th className="py-2.5 font-medium">Status</th><th className="py-2.5 font-medium">Providers</th><th className="py-2.5 font-medium">Launched</th>{manage && <th className="px-5 py-2.5 text-right font-medium">Change status</th>}</tr></thead>
+              <thead className="text-left text-xs text-grey-500"><tr className="border-b border-grey-100"><th className="px-5 py-2.5 font-medium">Region</th><th className="py-2.5 font-medium">District / State</th><th className="py-2.5 font-medium">Status</th><th className="py-2.5 font-medium">Providers</th><th className="py-2.5 font-medium">Launched</th>{manage && <th className="px-5 py-2.5 text-right font-medium">Change Status</th>}</tr></thead>
               <tbody>
                 {regions.data.map((r) => (
                   <tr key={r.id} className="border-b border-grey-100 last:border-0 hover:bg-grey-50">
@@ -104,7 +116,7 @@ function Regions() {
         )}
       </Card>
       {adding && <AddRegionDialog onClose={() => setAdding(false)} />}
-      <ConfirmDialog open={!!statusChange} onClose={() => setStatusChange(null)} onConfirm={() => statusChange && setStatus.mutate({ id: statusChange.region.id, status: statusChange.status })} loading={setStatus.isPending} danger={statusChange?.status === 'PAUSED'} title={statusChange ? `Set ${statusChange.region.name} to ${title(statusChange.status)}?` : ''} confirmLabel="Change status" message={statusChange ? `${REGION_HELP[statusChange.status]}${statusChange.status === 'LIVE' && statusChange.region.providerCount === 0 ? ' This region has no providers yet, so patients would see an empty area.' : ''}` : ''} />
+      <ConfirmDialog open={!!statusChange} onClose={() => setStatusChange(null)} onConfirm={() => statusChange && setStatus.mutate({ id: statusChange.region.id, status: statusChange.status })} loading={setStatus.isPending} danger={statusChange?.status === 'PAUSED'} title={statusChange ? `Set ${statusChange.region.name} to ${title(statusChange.status)}?` : ''} confirmLabel="Change Status" message={statusChange ? `${REGION_HELP[statusChange.status]}${statusChange.status === 'LIVE' && statusChange.region.providerCount === 0 ? ' This region has no providers yet, so patients would see an empty area.' : ''}` : ''} />
     </div>
   );
 }
@@ -124,12 +136,12 @@ function AddRegionDialog({ onClose }: { onClose: () => void }) {
   const dirty = !!(f.name || f.code || addr.pincode || addr.stateCode || addr.district || addr.city);
   const close = () => { if (dirty && !window.confirm('Discard this region?')) return; onClose(); };
   return (
-    <Dialog open onClose={close} size="lg" icon={Globe2} title="Add a service region" description="New regions start as PLANNED and are not visible to patients until you set them to PILOT or LIVE." footer={<><Button variant="ghost" onClick={close}>Cancel</Button><Button onClick={() => create.mutate()} loading={create.isPending} disabled={!ready}>Add region</Button></>}>
+    <Dialog open onClose={close} size="lg" icon={Globe2} title="Add a Service Region" description="New regions start as PLANNED and are not visible to patients until you set them to PILOT or LIVE." footer={<><Button variant="ghost" onClick={close}>Cancel</Button><Button onClick={() => create.mutate()} loading={create.isPending} disabled={!ready}>Add Region</Button></>}>
       <div className="space-y-4">
         <p className="text-grey-600">Enter the PIN code first; state and district fill automatically from the postal directory and you can adjust them.</p>
         <LocationFields value={addr} onChange={(p) => setAddr((a) => ({ ...a, ...p }))} show={{ pincode: true, city: true, locality: false }} required />
         <div className="grid gap-3 md:grid-cols-2">
-          <Field label="Region name" required hint={nameDupe ? 'A region with this name already exists in that district' : 'Defaults to the city / town'}><Input value={f.name} placeholder={addr.city || 'e.g. Tamluk'} onChange={(e) => setF({ ...f, name: e.target.value })} maxLength={120} /></Field>
+          <Field label="Region Name" required hint={nameDupe ? 'A region with this name already exists in that district' : 'Defaults to the city / town'}><Input value={f.name} placeholder={addr.city || 'e.g. Tamluk'} onChange={(e) => setF({ ...f, name: e.target.value })} maxLength={120} /></Field>
           <Field label="Code" required error={codeError} hint="Permanent identifier used in exports and integrations; suggested from country, state and name"><Input value={code} onChange={(e) => setF({ ...f, code: e.target.value.toUpperCase(), codeTouched: true })} className="font-mono" maxLength={64} /></Field>
         </div>
       </div>
@@ -153,19 +165,19 @@ function Holds() {
     { header: 'Reason', cell: ({ row }) => <span className="block max-w-md text-xs">{row.original.reason}</span> },
     { header: 'Placed', cell: ({ row }) => <span className="text-xs text-grey-600" title={dateTime(row.original.placedAt)}>{relative(row.original.placedAt)} · by {short(row.original.placedById)}</span> },
     { header: 'Status', cell: ({ row }) => (row.original.releasedAt ? <span className="text-xs text-grey-600">Released {relative(row.original.releasedAt)}</span> : <Badge accent="orange">active</Badge>) },
-    { header: '', cell: ({ row }) => !row.original.releasedAt && <Button size="sm" variant="secondary" onClick={() => setReleasing(row.original)}>Release</Button> },
+    { id: 'actions', header: () => <span className="sr-only">Actions</span>, cell: ({ row }) => !row.original.releasedAt && <Button size="sm" variant="secondary" onClick={() => setReleasing(row.original)}>Release</Button> },
   ];
   return (
     <div className="space-y-4">
-      <Card title="Legal holds" description="A hold freezes an entity for litigation, regulator requests or disputes: it blocks anonymisation and deletion until released. Placing and releasing are both audited with a reason." actions={<><Tabs active={scope} onChange={(k) => setScope(k as typeof scope)} tabs={[{ key: 'active', label: 'Active' }, { key: 'all', label: 'All' }]} /><Button size="sm" onClick={() => setPlacing(true)}><Plus size={14} /> Place hold</Button></>} padded={false}>
+      <Card title="Legal Holds" description="A hold freezes an entity for litigation, regulator requests or disputes: it blocks anonymisation and deletion until released. Placing and releasing are both audited with a reason." actions={<><Tabs active={scope} onChange={(k) => setScope(k as typeof scope)} tabs={[{ key: 'active', label: 'Active' }, { key: 'all', label: 'All' }]} /><Button size="sm" onClick={() => setPlacing(true)}><Plus size={14} /> Place Hold</Button></>} padded={false}>
         <div className="p-5 pt-2"><DataTable<Hold> path="/admin/compliance/legal-holds" params={{ activeOnly: scope === 'active' ? 'true' : 'false' }} columns={columns} emptyTitle={scope === 'active' ? 'No active legal holds' : 'No legal holds have been placed'} emptyDescription="Place a hold when a regulator, court or dispute requires records to be preserved." /></div>
       </Card>
       {placing && <PlaceHoldDialog onClose={() => setPlacing(false)} />}
-      <Dialog open={!!releasing} onClose={() => { setReleasing(null); setReleaseReason(''); }} icon={Gavel} title="Release legal hold" description={releasing ? `${releasing.entityType} ${releasing.entityId}` : ''} footer={<><Button variant="ghost" onClick={() => setReleasing(null)}>Cancel</Button><Button variant="danger" onClick={() => release.mutate()} loading={release.isPending} disabled={releaseReason.trim().length < 5}>Release hold</Button></>}>
+      <Dialog open={!!releasing} onClose={() => { setReleasing(null); setReleaseReason(''); }} icon={Gavel} title="Release Legal Hold" description={releasing ? `${releasing.entityType} ${releasing.entityId}` : ''} footer={<><Button variant="ghost" onClick={() => setReleasing(null)}>Cancel</Button><Button variant="danger" onClick={() => release.mutate()} loading={release.isPending} disabled={releaseReason.trim().length < 5}>Release Hold</Button></>}>
         <div className="space-y-3">
           <p className="text-grey-700">Once released, retention jobs may anonymise or delete this record again. Make sure the legal matter is closed.</p>
           {releasing && <p className="rounded-xl bg-grey-50 px-3 py-2 text-xs text-grey-700"><span className="font-medium">Original reason:</span> {releasing.reason}</p>}
-          <Field label="Reason for release" required hint="At least 5 characters · recorded in the audit log"><Textarea value={releaseReason} onChange={(e) => setReleaseReason(e.target.value.slice(0, 1000))} className="min-h-16" placeholder="e.g. Case 12/2026 closed; counsel confirmed on 17 Oct" /></Field>
+          <Field label="Reason for Release" required hint="At least 5 characters · recorded in the audit log"><Textarea value={releaseReason} onChange={(e) => setReleaseReason(e.target.value.slice(0, 1000))} className="min-h-16" placeholder="e.g. Case 12/2026 closed; counsel confirmed on 17 Oct" /></Field>
         </div>
       </Dialog>
     </div>
@@ -180,10 +192,10 @@ function PlaceHoldDialog({ onClose }: { onClose: () => void }) {
   const dirty = !!(f.entityId || f.reason);
   const close = () => { if (dirty && !window.confirm('Discard this hold?')) return; onClose(); };
   return (
-    <Dialog open onClose={close} icon={Gavel} title="Place a legal hold" description="Blocks anonymisation and deletion of one record until released." footer={<><Button variant="ghost" onClick={close}>Cancel</Button><Button onClick={() => create.mutate()} loading={create.isPending} disabled={!ready}>Place hold</Button></>}>
+    <Dialog open onClose={close} icon={Gavel} title="Place a Legal Hold" description="Blocks anonymisation and deletion of one record until released." footer={<><Button variant="ghost" onClick={close}>Cancel</Button><Button onClick={() => create.mutate()} loading={create.isPending} disabled={!ready}>Place Hold</Button></>}>
       <div className="space-y-3">
-        <Field label="Record type" required><Select value={f.entityType} onChange={(e) => setF({ ...f, entityType: e.target.value as typeof f.entityType })}>{HOLD_ENTITIES.map((t) => <option key={t} value={t}>{title(t)}</option>)}</Select></Field>
-        <Field label="Record id" required error={idError} hint="Copy it from the record’s page URL or details panel"><Input value={f.entityId} onChange={(e) => setF({ ...f, entityId: e.target.value.trim() })} className="font-mono" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" aria-invalid={!!idError} /></Field>
+        <Field label="Record Type" required><Select value={f.entityType} onChange={(e) => setF({ ...f, entityType: e.target.value as typeof f.entityType })}>{HOLD_ENTITIES.map((t) => <option key={t} value={t}>{title(t)}</option>)}</Select></Field>
+        <Field label="Record ID" required error={idError} hint="Copy it from the record’s page URL or details panel"><Input value={f.entityId} onChange={(e) => setF({ ...f, entityId: e.target.value.trim() })} className="font-mono" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" aria-invalid={!!idError} /></Field>
         <Field label="Reason" required hint="Case reference, requesting authority and expected duration · at least 5 characters"><Textarea value={f.reason} onChange={(e) => setF({ ...f, reason: e.target.value.slice(0, 1000) })} className="min-h-20" /></Field>
       </div>
     </Dialog>
@@ -203,13 +215,13 @@ function Incidents() {
     { header: 'Incident', cell: ({ row }) => <div><p className="font-medium">{row.original.title}</p><p className="font-mono text-xs text-grey-500">{row.original.reference}</p></div> },
     { header: 'Severity', cell: ({ row }) => <Badge>{row.original.severity}</Badge> },
     { header: 'Status', cell: ({ row }) => <Badge>{row.original.status}</Badge> },
-    { header: 'Personal data', cell: ({ row }) => (row.original.personalDataAffected ? <Badge accent="red">affected</Badge> : <span className="text-xs text-grey-500">No</span>) },
+    { header: 'Personal Data', cell: ({ row }) => (row.original.personalDataAffected ? <Badge accent="red">affected</Badge> : <span className="text-xs text-grey-500">No</span>) },
     { header: 'Detected', cell: ({ row }) => <span className="text-xs text-grey-600" title={dateTime(row.original.detectedAt)}>{relative(row.original.detectedAt)}</span> },
-    { header: 'Regulator', cell: ({ row }) => (row.original.regulatorNotifiedAt ? <span className="text-xs text-grey-600">Notified {relative(row.original.regulatorNotifiedAt)}</span> : row.original.personalDataAffected && row.original.status !== 'CLOSED' ? <span className="text-xs font-medium text-orange">Not yet notified</span> : <span className="text-xs text-grey-400">—</span>) },
+    { header: 'Regulator', cell: ({ row }) => (row.original.regulatorNotifiedAt ? <span className="text-xs text-grey-600">Notified {relative(row.original.regulatorNotifiedAt)}</span> : row.original.personalDataAffected && row.original.status !== 'CLOSED' ? <span className="text-xs font-medium text-orange">Not Yet Notified</span> : <span className="text-xs text-grey-400">—</span>) },
   ];
   return (
     <div className="space-y-4">
-      <Card title="Security & privacy incidents" description="Record every suspected breach, misuse or outage affecting personal data. Under the DPDP Act, breaches must be reported to the Data Protection Board and affected individuals; track the notification here." actions={<><Select aria-label="Filter by status" value={status} onChange={(e) => setStatus(e.target.value)} className="h-9 w-40 text-xs"><option value="">All statuses</option>{INCIDENT_FLOW.map((s) => <option key={s} value={s}>{title(s)}</option>)}</Select><Button size="sm" onClick={() => setRecording(true)}><Plus size={14} /> Record incident</Button></>} padded={false}>
+      <Card title="Security & Privacy Incidents" description="Record every suspected breach, misuse or outage affecting personal data. Under the DPDP Act, breaches must be reported to the Data Protection Board and affected individuals; track the notification here." actions={<><Select aria-label="Filter by Status" value={status} onChange={(e) => setStatus(e.target.value)} className="h-9 w-40 text-xs"><option value="">All Statuses</option>{INCIDENT_FLOW.map((s) => <option key={s} value={s}>{title(s)}</option>)}</Select><Button size="sm" onClick={() => setRecording(true)}><Plus size={14} /> Record Incident</Button></>} padded={false}>
         <div className="p-5 pt-2"><DataTable<Incident> path="/admin/compliance/incidents" params={{ status }} columns={columns} onRowClick={setSelected} emptyTitle={status ? `No ${title(status).toLowerCase()} incidents` : 'No incidents recorded'} emptyDescription="That is good news — but record even near-misses so the register shows due diligence." /></div>
       </Card>
       {recording && <RecordIncidentDialog onClose={() => setRecording(false)} />}
@@ -228,15 +240,15 @@ function RecordIncidentDialog({ onClose }: { onClose: () => void }) {
   const dirty = !!(f.title || f.summary);
   const close = () => { if (dirty && !window.confirm('Discard this incident record?')) return; onClose(); };
   return (
-    <Dialog open onClose={close} size="lg" icon={AlertOctagon} title="Record an incident" description="Creates an OPEN incident with a reference number; you can update status and regulator notification afterwards." footer={<><Button variant="ghost" onClick={close}>Cancel</Button><Button onClick={() => create.mutate()} loading={create.isPending} disabled={!ready}>Record incident</Button></>}>
+    <Dialog open onClose={close} size="lg" icon={AlertOctagon} title="Record an Incident" description="Creates an OPEN incident with a reference number; you can update status and regulator notification afterwards." footer={<><Button variant="ghost" onClick={close}>Cancel</Button><Button onClick={() => create.mutate()} loading={create.isPending} disabled={!ready}>Record Incident</Button></>}>
       <div className="grid gap-3 md:grid-cols-2">
         <Field label="Title" required className="md:col-span-2" hint={`${f.title.length}/200`}><Input value={f.title} onChange={(e) => setF({ ...f, title: e.target.value.slice(0, 200) })} placeholder="e.g. Diagnostic report opened by an unauthorised staff account" /></Field>
         <Field label="Severity" required hint="Critical: confirmed exposure of health or payment data"><Select value={f.severity} onChange={(e) => setF({ ...f, severity: e.target.value as typeof f.severity })}>{SEVERITIES.map((s) => <option key={s} value={s}>{title(s)}</option>)}</Select></Field>
-        <Field label="Detected at" required error={detectedError}><Input type="datetime-local" value={f.detectedAt} max={openedAt.local} onChange={(e) => setF({ ...f, detectedAt: e.target.value })} /></Field>
-        <Field label="What happened" required className="md:col-span-2" hint={`${f.summary.trim().length}/5000 · at least 10 characters · what, who, which data, how it was found`}><Textarea value={f.summary} onChange={(e) => setF({ ...f, summary: e.target.value.slice(0, 5000) })} className="min-h-28" /></Field>
+        <Field label="Detected At" required error={detectedError}><Input type="datetime-local" value={f.detectedAt} max={openedAt.local} onChange={(e) => setF({ ...f, detectedAt: e.target.value })} /></Field>
+        <Field label="What Happened" required className="md:col-span-2" hint={`${f.summary.trim().length}/5000 · at least 10 characters · what, who, which data, how it was found`}><Textarea value={f.summary} onChange={(e) => setF({ ...f, summary: e.target.value.slice(0, 5000) })} className="min-h-28" /></Field>
         <label className={cx('flex items-start gap-2 rounded-xl border px-3 py-2 text-sm md:col-span-2', f.personalDataAffected ? 'border-red/30 bg-red-soft' : 'border-grey-200')}>
           <input type="checkbox" className="mt-0.5 accent-black" checked={f.personalDataAffected} onChange={(e) => setF({ ...f, personalDataAffected: e.target.checked })} />
-          <span><span className="font-medium">Personal data affected</span><span className="block text-xs text-grey-600">Starts the DPDP notification duty: inform the Data Protection Board and affected individuals, and record the time here once done.</span></span>
+          <span><span className="font-medium">Personal Data Affected</span><span className="block text-xs text-grey-600">Starts the DPDP notification duty: inform the Data Protection Board and affected individuals, and record the time here once done.</span></span>
         </label>
       </div>
     </Dialog>
@@ -254,19 +266,19 @@ function IncidentDialog({ incident: i, onClose }: { incident: Incident; onClose:
   const closeNeedsNotice = next === 'CLOSED' && i.personalDataAffected && !i.regulatorNotifiedAt && !notifiedAt;
   const ready = (next || notifiedAt) && !closeNeedsNotice && (!next || note.trim().length >= 5);
   return (
-    <Dialog open onClose={onClose} size="lg" icon={AlertOctagon} title={i.title} description={`${i.reference} · ${title(i.severity)} · ${title(i.status)}`} footer={<><Button variant="ghost" onClick={onClose}>Close</Button>{i.status !== 'CLOSED' && <Button onClick={() => update.mutate()} loading={update.isPending} disabled={!ready}>Save update</Button>}</>}>
+    <Dialog open onClose={onClose} size="lg" icon={AlertOctagon} title={i.title} description={`${i.reference} · ${title(i.severity)} · ${title(i.status)}`} footer={<><Button variant="ghost" onClick={onClose}>Close</Button>{i.status !== 'CLOSED' && <Button onClick={() => update.mutate()} loading={update.isPending} disabled={!ready}>Save Update</Button>}</>}>
       <div className="space-y-4">
         <div className="flex flex-wrap gap-2"><Badge>{i.severity}</Badge><Badge>{i.status}</Badge>{i.personalDataAffected && <Badge accent="red">personal data affected</Badge>}</div>
         <p className="whitespace-pre-wrap text-grey-800">{i.summary}</p>
-        <DescriptionList items={[{ label: 'Detected', value: dateTime(i.detectedAt) }, { label: 'Recorded', value: `${dateTime(i.createdAt)} by ${short(i.createdById)}` }, { label: 'Contained', value: dateTime(i.containedAt) }, { label: 'Resolved', value: dateTime(i.resolvedAt) }, { label: 'Regulator notified', value: i.regulatorNotifiedAt ? dateTime(i.regulatorNotifiedAt) : i.personalDataAffected ? <span className="font-medium text-orange">Not yet</span> : 'Not required' }, { label: 'Last updated', value: dateTime(i.updatedAt) }]} />
+        <DescriptionList items={[{ label: 'Detected', value: dateTime(i.detectedAt) }, { label: 'Recorded', value: `${dateTime(i.createdAt)} by ${short(i.createdById)}` }, { label: 'Contained', value: dateTime(i.containedAt) }, { label: 'Resolved', value: dateTime(i.resolvedAt) }, { label: 'Regulator Notified', value: i.regulatorNotifiedAt ? dateTime(i.regulatorNotifiedAt) : i.personalDataAffected ? <span className="font-medium text-orange">Not Yet</span> : 'Not Required' }, { label: 'Last Updated', value: dateTime(i.updatedAt) }]} />
         <ol className="flex flex-wrap items-center gap-2 text-xs" aria-label="Lifecycle">
           {INCIDENT_FLOW.map((s, n) => <li key={s} className="flex items-center gap-2"><span className={cx('rounded-full px-2.5 py-1 font-medium', n < idx ? 'bg-green-soft text-green' : n === idx ? 'bg-ink text-paper' : 'bg-grey-100 text-grey-500')}>{title(s)}</span>{n < INCIDENT_FLOW.length - 1 && <span className="h-px w-5 bg-grey-300" />}</li>)}
         </ol>
         {i.status !== 'CLOSED' && (
           <FormSection title="Update" hint="Status moves forward only. Each update is audited with your note.">
             <div className="grid gap-3 md:grid-cols-2">
-              <Field label="Move to" hint={next ? ({ CONTAINED: 'The cause is stopped; data is no longer leaking.', RESOLVED: 'Root cause fixed and affected people handled.', CLOSED: 'Post-mortem done; no further action.' } as Record<string, string>)[next] : 'Leave unchanged to only record the regulator notice'}><Select value={next} onChange={(e) => setNext(e.target.value)}><option value="">Keep {title(i.status)}</option>{forward.map((s) => <option key={s} value={s}>{title(s)}</option>)}</Select></Field>
-              <Field label="Regulator notified at" hint={i.regulatorNotifiedAt ? 'Already recorded; set again only to correct it' : i.personalDataAffected ? 'Required before closing' : 'Optional'}><Input type="datetime-local" value={notifiedAt} max={maxNow} onChange={(e) => setNotifiedAt(e.target.value)} /></Field>
+              <Field label="Move To" hint={next ? ({ CONTAINED: 'The cause is stopped; data is no longer leaking.', RESOLVED: 'Root cause fixed and affected people handled.', CLOSED: 'Post-mortem done; no further action.' } as Record<string, string>)[next] : 'Leave unchanged to only record the regulator notice'}><Select value={next} onChange={(e) => setNext(e.target.value)}><option value="">Keep {title(i.status)}</option>{forward.map((s) => <option key={s} value={s}>{title(s)}</option>)}</Select></Field>
+              <Field label="Regulator Notified At" hint={i.regulatorNotifiedAt ? 'Already recorded; set again only to correct it' : i.personalDataAffected ? 'Required before closing' : 'Optional'}><Input type="datetime-local" value={notifiedAt} max={maxNow} onChange={(e) => setNotifiedAt(e.target.value)} /></Field>
               <Field label="Note" required={!!next} className="md:col-span-2" hint="What was done, by whom · at least 5 characters when changing status"><Textarea value={note} onChange={(e) => setNote(e.target.value.slice(0, 2000))} className="min-h-16" /></Field>
             </div>
             {closeNeedsNotice && <p role="alert" className="mt-3 rounded-xl bg-red-soft px-3 py-2 text-xs text-red">Personal data was affected and the regulator notification has not been recorded. Record it before closing the incident.</p>}

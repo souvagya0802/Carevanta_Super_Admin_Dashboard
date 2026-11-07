@@ -2,7 +2,7 @@
 
 import { Bar, BarChart, CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { useMemo } from 'react';
-import { money, count } from '@/lib/format';
+import { money, count, title } from '@/lib/format';
 import { ACCENT, ACCENT_ORDER, EmptyState, ErrorState, Skeleton, type Accent } from './ui/primitives';
 
 /** Colourful series palette; the same hexes as the UI accents so legends match badges. */
@@ -54,7 +54,7 @@ interface ChartProps {
   emptyTitle?: string;
 }
 
-export function SeriesChart({ points, unit = 'count', loading, error, retry, height = 260, kind = 'line', emptyTitle = 'No data in this range' }: ChartProps) {
+export function SeriesChart({ points, unit = 'count', loading, error, retry, height = 260, kind = 'line', emptyTitle = 'No Data in This Range' }: ChartProps) {
   const { groups, rows } = useMemo(() => pivot(points ?? []), [points]);
   if (loading) return <Skeleton rows={4} />;
   if (error) return <ErrorState error={error} retry={retry} />;
@@ -74,7 +74,7 @@ export function SeriesChart({ points, unit = 'count', loading, error, retry, hei
             <Tooltip formatter={(v) => fmt(Number(v))} labelFormatter={(l) => shortDate(String(l))} contentStyle={tooltipStyle} cursor={{ fill: '#f3f4f6' }} />
             {groups.length > 1 && <Legend wrapperStyle={{ fontSize: 11 }} iconType="circle" />}
             {groups.map((g, i) => (
-              <Bar key={g} dataKey={g} name={g.replace(/_/g, ' ').toLowerCase()} stackId="a" fill={seriesColor(g, i)} radius={i === groups.length - 1 ? [6, 6, 0, 0] : 0} />
+              <Bar key={g} dataKey={g} name={title(g)} stackId="a" fill={seriesColor(g, i)} radius={i === groups.length - 1 ? [6, 6, 0, 0] : 0} />
             ))}
           </BarChart>
         ) : (
@@ -85,7 +85,7 @@ export function SeriesChart({ points, unit = 'count', loading, error, retry, hei
             <Tooltip formatter={(v) => fmt(Number(v))} labelFormatter={(l) => shortDate(String(l))} contentStyle={tooltipStyle} />
             {groups.length > 1 && <Legend wrapperStyle={{ fontSize: 11 }} iconType="circle" />}
             {groups.map((g, i) => (
-              <Line key={g} type="monotone" dataKey={g} name={g.replace(/_/g, ' ').toLowerCase()} stroke={seriesColor(g, i)} dot={false} strokeWidth={2.25} isAnimationActive={false} />
+              <Line key={g} type="monotone" dataKey={g} name={title(g)} stroke={seriesColor(g, i)} dot={false} strokeWidth={2.25} isAnimationActive={false} />
             ))}
           </LineChart>
         )}
@@ -98,13 +98,13 @@ export function SeriesChart({ points, unit = 'count', loading, error, retry, hei
 export function Breakdown({ data, formatter = count, colored = true }: { data: Record<string, number> | undefined; formatter?: (n: number) => string; colored?: boolean }) {
   const entries = Object.entries(data ?? {}).sort((a, b) => b[1] - a[1]);
   const max = Math.max(1, ...entries.map((e) => e[1]));
-  if (!entries.length) return <p className="text-sm text-grey-500">No data</p>;
+  if (!entries.length) return <p className="text-sm text-grey-500">No Data</p>;
   return (
     <ul className="space-y-2.5 text-sm">
       {entries.map(([k, v], i) => (
         <li key={k}>
           <div className="flex justify-between text-xs">
-            <span className="truncate text-grey-700">{k.replace(/_/g, ' ')}</span>
+            <span className="truncate text-grey-700">{title(k)}</span>
             <span className="tnum ml-2 font-medium">{formatter(v)}</span>
           </div>
           <div className="mt-1 h-2 overflow-hidden rounded-full bg-grey-100">

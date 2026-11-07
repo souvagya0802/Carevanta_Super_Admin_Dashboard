@@ -34,7 +34,7 @@ describe('LocationFields', () => {
     render(<AppProviders><Harness onValue={seen} /></AppProviders>);
     const state = (await screen.findByLabelText(/state \/ ut/i)) as HTMLSelectElement;
     await waitFor(() => expect(state.options.length).toBe(3));
-    expect(Array.from(state.options).map((o) => o.text)).toEqual(['Select state', 'Maharashtra', 'West Bengal']);
+    expect(Array.from(state.options).map((o) => o.text)).toEqual(['Select State', 'Maharashtra', 'West Bengal']);
 
     await userEvent.type(screen.getByLabelText(/pin code/i), '721629');
     await waitFor(() => expect((screen.getByLabelText(/district/i) as HTMLInputElement).value).toBe('East Midnapore'));

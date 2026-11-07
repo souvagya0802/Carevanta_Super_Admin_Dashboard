@@ -18,9 +18,9 @@ interface Holder { id: string; fullName: string; email: string | null; phone: st
 
 /** Human labels for permission modules (first segment of the key). Unknown modules fall back to title-case. */
 const MODULE_LABELS: Record<string, string> = {
-  users: 'Users & accounts', roles: 'Roles & access', providers: 'Providers', affiliations: 'Doctor–facility affiliations', catalogue: 'Clinical catalogue', schedules: 'Schedules', bookings: 'Appointments',
-  diagnostics: 'Diagnostics', pharmacy: 'Pharmacy', ambulance: 'Ambulance fleet', dispatch: 'Emergency dispatch', finance: 'Finance', support: 'Complaints & support', audit: 'Audit log',
-  notifications: 'Notifications', analytics: 'Analytics & reports', exports: 'Data exports', settings: 'Platform settings', regions: 'Service regions', compliance: 'Compliance',
+  users: 'Users & Accounts', roles: 'Roles & Access', providers: 'Providers', affiliations: 'Doctor–Facility Affiliations', catalogue: 'Clinical Catalogue', schedules: 'Schedules', bookings: 'Appointments',
+  diagnostics: 'Diagnostics', pharmacy: 'Pharmacy', ambulance: 'Ambulance Fleet', dispatch: 'Emergency Dispatch', finance: 'Finance', support: 'Complaints & Support', audit: 'Audit Log',
+  notifications: 'Notifications', analytics: 'Analytics & Reports', exports: 'Data Exports', settings: 'Platform Settings', regions: 'Service Regions', compliance: 'Compliance',
 };
 const moduleOf = (key: string) => key.split('.')[0]!;
 const moduleLabel = (m: string) => MODULE_LABELS[m] ?? title(m);
@@ -59,13 +59,13 @@ export default function RolesPage() {
 
   return (
     <RequirePermission anyOf={['roles.read']}>
-      <PageHeader title="Roles & permissions" description="A role is a named set of permissions. System roles are defined in code and synchronised on deploy; custom roles can only contain permissions you hold yourself, and nobody can grant a role to themselves." actions={manage && <Button onClick={() => setEditor({ mode: 'create' })}><Shield size={16} /> New custom role</Button>} />
+      <PageHeader title="Roles & Permissions" description="A role is a named set of permissions. System roles are defined in code and synchronised on deploy; custom roles can only contain permissions you hold yourself, and nobody can grant a role to themselves." actions={manage && <Button onClick={() => setEditor({ mode: 'create' })}><Shield size={16} /> New Custom Role</Button>} />
 
       <div className="mb-5 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
         <MiniStat icon={Shield} accent="ink" label="Roles" value={stats.total} loading={roles.isPending} />
-        <MiniStat icon={Lock} accent="blue" label="System roles" value={stats.system} loading={roles.isPending} />
-        <MiniStat icon={Pencil} accent="purple" label="Custom roles" value={stats.custom} loading={roles.isPending} />
-        <MiniStat icon={Users} accent="green" label="Active assignments" value={stats.holders} loading={roles.isPending} />
+        <MiniStat icon={Lock} accent="blue" label="System Roles" value={stats.system} loading={roles.isPending} />
+        <MiniStat icon={Pencil} accent="purple" label="Custom Roles" value={stats.custom} loading={roles.isPending} />
+        <MiniStat icon={Users} accent="green" label="Active Assignments" value={stats.holders} loading={roles.isPending} />
         <MiniStat icon={KeyRound} accent="teal" label="Permissions" value={stats.permissions} loading={permissions.isPending} />
         <MiniStat icon={AlertTriangle} accent="orange" label="Sensitive" value={stats.sensitive} loading={permissions.isPending} />
       </div>
@@ -75,16 +75,16 @@ export default function RolesPage() {
           <Tabs active={tab} onChange={(k) => setTab(k as typeof tab)} tabs={[{ key: 'all', label: 'All', count: stats.total }, { key: 'system', label: 'System', count: stats.system }, { key: 'custom', label: 'Custom', count: stats.custom }]} />
           <div className="relative w-full sm:w-72">
             <Search size={15} aria-hidden className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-grey-400" />
-            <Input aria-label="Search roles" placeholder="Search name, key or permission…" value={q} onChange={(e) => setQ(e.target.value)} className="pl-9" />
+            <Input aria-label="Search Roles" placeholder="Search name, key or permission…" value={q} onChange={(e) => setQ(e.target.value)} className="pl-9" />
           </div>
         </div>
         {roles.isPending || permissions.isPending ? <div className="p-5"><Skeleton rows={6} /></div> : roles.isError ? <div className="p-5"><ErrorState error={roles.error} retry={() => roles.refetch()} /></div> : permissions.isError ? <div className="p-5"><ErrorState error={permissions.error} retry={() => permissions.refetch()} /></div> : filtered.length === 0 ? (
-          <div className="p-5"><EmptyState title={q ? 'No roles match your search' : tab === 'custom' ? 'No custom roles yet' : 'No roles'} description={tab === 'custom' && !q ? 'Create a custom role when a team needs a narrower set of permissions than the system roles provide.' : undefined} action={manage && tab === 'custom' && !q ? <Button onClick={() => setEditor({ mode: 'create' })}>New custom role</Button> : undefined} /></div>
+          <div className="p-5"><EmptyState title={q ? 'No roles match your search' : tab === 'custom' ? 'No custom roles yet' : 'No roles'} description={tab === 'custom' && !q ? 'Create a custom role when a team needs a narrower set of permissions than the system roles provide.' : undefined} action={manage && tab === 'custom' && !q ? <Button onClick={() => setEditor({ mode: 'create' })}>New Custom Role</Button> : undefined} /></div>
         ) : (
           <>
             {/* Desktop table */}
             <table className="hidden w-full text-sm md:table">
-              <thead className="text-left text-xs uppercase tracking-wide text-grey-500">
+              <thead className="text-left text-xs text-grey-500">
                 <tr className="border-b border-grey-100"><th className="px-5 py-2.5 font-medium">Role</th><th className="py-2.5 font-medium">Type</th><th className="py-2.5 font-medium">Permissions</th><th className="py-2.5 font-medium">Holders</th><th className="py-2.5 font-medium">Updated</th><th className="px-5 py-2.5 text-right font-medium">Actions</th></tr>
               </thead>
               <tbody>
@@ -129,7 +129,7 @@ export default function RolesPage() {
                     <Badge accent={r.isSystem ? 'blue' : 'purple'}>{r.isSystem ? 'system' : 'custom'}</Badge>
                   </div>
                   {r.description && <p className="text-xs text-grey-600">{r.description}</p>}
-                  <div className="flex flex-wrap items-center gap-3 text-xs text-grey-600"><span><span className="tnum font-medium text-ink">{r.key === 'SUPER_ADMIN' ? 'All' : r.permissions.length}</span> permissions</span><button type="button" onClick={() => setHoldersOf(r)} className="inline-flex items-center gap-1 underline-offset-2 hover:underline"><Users size={12} /> {r.activeAssignments} holders</button><span>updated {relative(r.updatedAt)}</span></div>
+                  <div className="flex flex-wrap items-center gap-3 text-xs text-grey-600"><span><span className="tnum font-medium text-ink">{r.key === 'SUPER_ADMIN' ? 'All' : r.permissions.length}</span> permissions</span><button type="button" onClick={() => setHoldersOf(r)} className="inline-flex min-h-10 items-center gap-1 underline-offset-2 hover:underline sm:min-h-0"><Users size={12} /> {r.activeAssignments} holders</button><span>updated {relative(r.updatedAt)}</span></div>
                   <div className="flex flex-wrap gap-2">
                     <Button size="sm" variant="secondary" onClick={() => setViewing(r)}><Eye size={14} /> View</Button>
                     {manage && <Button size="sm" variant="secondary" onClick={() => setEditor({ mode: 'clone', role: r })}><Copy size={14} /> Clone</Button>}
@@ -160,7 +160,7 @@ export default function RolesPage() {
         <RoleView role={viewing} catalogue={permissions.data} onClose={() => setViewing(null)} onHolders={() => { setHoldersOf(viewing); setViewing(null); }} onClone={manage ? () => { setEditor({ mode: 'clone', role: viewing }); setViewing(null); } : undefined} onEdit={manage && !viewing.isSystem ? () => { setEditor({ mode: 'edit', role: viewing }); setViewing(null); } : undefined} />
       )}
       {holdersOf && <HoldersDialog role={holdersOf} onClose={() => setHoldersOf(null)} canOpenUsers={can('users.read')} />}
-      <ConfirmDialog open={!!deleting} onClose={() => setDeleting(null)} onConfirm={() => deleting && remove.mutate(deleting.id)} loading={remove.isPending} danger title="Delete this role?" confirmLabel="Delete role" message={deleting ? `${deleting.name} (${deleting.key}) has never been granted to anyone, so deleting it leaves no gap in the audit trail. This cannot be undone.` : ''} />
+      <ConfirmDialog open={!!deleting} onClose={() => setDeleting(null)} onConfirm={() => deleting && remove.mutate(deleting.id)} loading={remove.isPending} danger title="Delete This Role?" confirmLabel="Delete Role" message={deleting ? `${deleting.name} (${deleting.key}) has never been granted to anyone, so deleting it leaves no gap in the audit trail. This cannot be undone.` : ''} />
     </RequirePermission>
   );
 }
@@ -190,21 +190,21 @@ function RoleView({ role, catalogue, onClose, onHolders, onClone, onEdit }: { ro
   const groups = groupBy(catalogue).map(([m, ps]) => [m, ps.filter((p) => role.permissions.includes(p.key))] as const).filter(([, ps]) => ps.length);
   const sensitive = role.permissions.filter((p) => catalogue.find((c) => c.key === p)?.isSensitive).length;
   return (
-    <Dialog open onClose={onClose} size="lg" icon={role.isSystem ? Lock : Shield} title={role.name} description={`${role.key} · ${role.isSystem ? 'System role' : 'Custom role'} · ${role.activeAssignments} active holder${role.activeAssignments === 1 ? '' : 's'}`} footer={<>{onClone && <Button variant="secondary" onClick={onClone}><Copy size={14} /> Clone as custom role</Button>}{onEdit && <Button variant="secondary" onClick={onEdit}><Pencil size={14} /> Edit</Button>}<Button onClick={onClose}>Close</Button></>}>
+    <Dialog open onClose={onClose} size="lg" icon={role.isSystem ? Lock : Shield} title={role.name} description={`${role.key} · ${role.isSystem ? 'System Role' : 'Custom Role'} · ${role.activeAssignments} active holder${role.activeAssignments === 1 ? '' : 's'}`} footer={<>{onClone && <Button variant="secondary" onClick={onClone}><Copy size={14} /> Clone as Custom Role</Button>}{onEdit && <Button variant="secondary" onClick={onEdit}><Pencil size={14} /> Edit</Button>}<Button onClick={onClose}>Close</Button></>}>
       <div className="space-y-4">
         {role.description && <p className="text-grey-700">{role.description}</p>}
         <div className="grid grid-cols-2 gap-3 text-xs sm:grid-cols-4">
           <Fact label="Permissions" value={role.key === 'SUPER_ADMIN' ? 'All (implicit)' : String(role.permissions.length)} />
           <Fact label="Sensitive" value={String(sensitive)} />
           <Fact label="Created" value={dateTime(role.createdAt)} />
-          <Fact label="Last updated" value={dateTime(role.updatedAt)} />
+          <Fact label="Last Updated" value={dateTime(role.updatedAt)} />
         </div>
         {role.isSystem && <p className="rounded-xl bg-blue-soft px-3 py-2 text-xs text-blue">System roles are maintained in code and synchronised on every deploy. To adjust a team’s access, clone this role and edit the copy.</p>}
         {role.key === 'SUPER_ADMIN' && <p className="rounded-xl bg-orange-soft px-3 py-2 text-xs text-orange">Super administrators hold every permission, including future ones. Keep at least two active holders; the platform refuses to suspend or demote the last one.</p>}
         <button type="button" onClick={onHolders} className="inline-flex items-center gap-1.5 text-sm font-medium underline-offset-2 hover:underline"><Users size={14} /> View {role.activeAssignments} holder{role.activeAssignments === 1 ? '' : 's'}</button>
         {groups.length === 0 ? <p className="text-sm text-grey-500">{role.key === 'SUPER_ADMIN' ? 'Holds every permission in the catalogue.' : 'No permissions.'}</p> : groups.map(([m, ps]) => (
           <div key={m}>
-            <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-grey-500">{moduleLabel(m)} <span className="font-normal normal-case">· {ps.length}</span></p>
+            <p className="mb-1.5 text-xs font-semibold text-grey-500">{moduleLabel(m)} <span className="font-normal normal-case">· {ps.length}</span></p>
             <ul className="divide-y divide-grey-100 rounded-xl border border-grey-200">
               {ps.map((p) => <li key={p.key} className="flex items-start gap-3 px-3 py-2"><ShieldCheck size={14} className={cx('mt-0.5 shrink-0', p.isSensitive ? 'text-orange' : 'text-green')} aria-hidden /><div className="min-w-0"><p className="font-mono text-xs">{p.key}{p.isSensitive && <Badge accent="orange">sensitive</Badge>}</p><p className="text-xs text-grey-600">{p.description}</p></div></li>)}
             </ul>
@@ -215,14 +215,14 @@ function RoleView({ role, catalogue, onClose, onHolders, onClone, onEdit }: { ro
   );
 }
 function Fact({ label, value }: { label: string; value: string }) {
-  return <div className="rounded-xl bg-grey-50 px-3 py-2"><p className="text-[11px] uppercase tracking-wide text-grey-500">{label}</p><p className="mt-0.5 font-medium text-ink">{value}</p></div>;
+  return <div className="rounded-xl bg-grey-50 px-3 py-2"><p className="text-[11px] text-grey-500">{label}</p><p className="mt-0.5 font-medium text-ink">{value}</p></div>;
 }
 
 /* ─── Holders ──────────────────────────────────────────────────────────── */
 function HoldersDialog({ role, onClose, canOpenUsers }: { role: Role; onClose: () => void; canOpenUsers: boolean }) {
   const holders = useGet<Holder[]>(canOpenUsers ? `/admin/users?role=${encodeURIComponent(role.key)}&limit=100` : null);
   return (
-    <Dialog open onClose={onClose} icon={Users} title={`Who holds ${role.name}`} description={`${role.activeAssignments} active · ${role.totalAssignments - role.activeAssignments} revoked in history`} footer={<>{canOpenUsers && <Link href={`/users?role=${encodeURIComponent(role.key)}`}><Button variant="secondary">Open in Users</Button></Link>}<Button onClick={onClose}>Close</Button></>}>
+    <Dialog open onClose={onClose} icon={Users} title={`Who Holds ${role.name}`} description={`${role.activeAssignments} active · ${role.totalAssignments - role.activeAssignments} revoked in history`} footer={<>{canOpenUsers && <Link href={`/users?role=${encodeURIComponent(role.key)}`}><Button variant="secondary">Open in Users</Button></Link>}<Button onClick={onClose}>Close</Button></>}>
       {!canOpenUsers ? <p className="text-grey-600">You need the users.read permission to see who holds this role.</p> : holders.isPending ? <Skeleton rows={4} /> : holders.isError ? <ErrorState error={holders.error} retry={() => holders.refetch()} /> : holders.data.length === 0 ? <EmptyState title="Nobody holds this role right now" description="Grant it from a user’s page (Users → user → Grant role)." /> : (
         <ul className="divide-y divide-grey-100">
           {holders.data.map((u) => (
@@ -303,7 +303,7 @@ function RoleEditor({ mode, role, allRoles, catalogue, held, isSuperAdmin, holds
   const groups = groupBy(catalogue).map(([m, ps]) => [m, ps.filter((p) => (!needle || p.key.includes(needle) || p.description.toLowerCase().includes(needle) || moduleLabel(m).toLowerCase().includes(needle)) && (!onlySelected || selected.has(p.key)))] as const).filter(([, ps]) => ps.length);
 
   return (
-    <Dialog open onClose={close} size="full" icon={mode === 'clone' ? Copy : editing ? Pencil : Shield} title={editing ? `Edit ${editing.name}` : mode === 'clone' ? `Clone ${role?.name}` : 'New custom role'} description={editing ? `${editing.key} · changes apply immediately to ${affected} current holder${affected === 1 ? '' : 's'}` : 'Custom roles can only include permissions you hold yourself.'}
+    <Dialog open onClose={close} size="full" icon={mode === 'clone' ? Copy : editing ? Pencil : Shield} title={editing ? `Edit ${editing.name}` : mode === 'clone' ? `Clone ${role?.name}` : 'New Custom Role'} description={editing ? `${editing.key} · changes apply immediately to ${affected} current holder${affected === 1 ? '' : 's'}` : 'Custom roles can only include permissions you hold yourself.'}
       footer={
         <div className="flex w-full flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-2 text-xs text-grey-600">
@@ -311,18 +311,18 @@ function RoleEditor({ mode, role, allRoles, catalogue, held, isSuperAdmin, holds
             {sensitiveSelected > 0 && <span className="text-orange">· {sensitiveSelected} sensitive</span>}
             {editing && (added.length > 0 || removed.length > 0) && <span>· <span className="text-green">+{added.length}</span> <span className="text-red">−{removed.length}</span></span>}
           </div>
-          <div className="flex gap-2"><Button variant="ghost" onClick={close}>Cancel</Button><Button onClick={() => save.mutate()} loading={save.isPending} disabled={!canSave}>{editing ? 'Save changes' : 'Create role'}</Button></div>
+          <div className="flex gap-2"><Button variant="ghost" onClick={close}>Cancel</Button><Button onClick={() => save.mutate()} loading={save.isPending} disabled={!canSave}>{editing ? 'Save Changes' : 'Create Role'}</Button></div>
         </div>
       }
     >
       <div className="grid gap-4 xl:grid-cols-[360px_1fr]">
         <div className="space-y-4">
-          <FormSection title="Role details" icon={Shield} accent="blue">
+          <FormSection title="Role Details" icon={Shield} accent="blue">
             <div className="space-y-3">
               <Field label="Key" required hint={editing ? 'Keys are permanent; they are referenced by audit logs and integrations' : 'UPPER_SNAKE_CASE, e.g. REGION_COORDINATOR'} error={keyError}>
                 <Input value={key} disabled={!!editing} onChange={(e) => setKey(normaliseKey(e.target.value))} className="font-mono" aria-invalid={!!keyError} maxLength={64} />
               </Field>
-              <Field label="Display name" required error={nameError} hint={nameDupe ? 'Another role already uses this name — allowed, but confusing for assigners' : undefined}>
+              <Field label="Display Name" required error={nameError} hint={nameDupe ? 'Another role already uses this name — allowed, but confusing for assigners' : undefined}>
                 <Input value={name} onChange={(e) => setName(e.target.value)} maxLength={120} aria-invalid={!!nameError} />
               </Field>
               <Field label="Description" hint={`${description.length}/500 · what this role is for and who should hold it`}>
@@ -350,13 +350,13 @@ function RoleEditor({ mode, role, allRoles, catalogue, held, isSuperAdmin, holds
           <div className="mb-3 flex flex-wrap items-center gap-2">
             <div className="relative min-w-0 flex-1">
               <Search size={15} aria-hidden className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-grey-400" />
-              <Input aria-label="Search permissions" placeholder="Filter permissions…" value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+              <Input aria-label="Search Permissions" placeholder="Filter permissions…" value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
               {search && <button type="button" onClick={() => setSearch('')} aria-label="Clear" className="absolute top-1/2 right-2 -translate-y-1/2 text-grey-400 hover:text-ink"><X size={14} /></button>}
             </div>
-            <label className="inline-flex items-center gap-2 text-xs"><input type="checkbox" className="accent-black" checked={onlySelected} onChange={(e) => setOnlySelected(e.target.checked)} /> Selected only</label>
-            {!matrixLocked && <Button size="sm" variant="ghost" onClick={() => setSelected(new Set())} disabled={selected.size === 0}>Clear all</Button>}
+            <label className="inline-flex items-center gap-2 text-xs"><input type="checkbox" className="accent-black" checked={onlySelected} onChange={(e) => setOnlySelected(e.target.checked)} /> Selected Only</label>
+            {!matrixLocked && <Button size="sm" variant="ghost" onClick={() => setSelected(new Set())} disabled={selected.size === 0}>Clear All</Button>}
           </div>
-          {groups.length === 0 ? <EmptyState title="No permissions match" description="Try another word, or turn off ‘Selected only’." /> : (
+          {groups.length === 0 ? <EmptyState title="No Permissions Match" description="Try another word, or turn off ‘Selected only’." /> : (
             <div className="space-y-4">
               {groups.map(([m, ps]) => {
                 const grantable = ps.filter((p) => holds(p.key));
@@ -366,8 +366,8 @@ function RoleEditor({ mode, role, allRoles, catalogue, held, isSuperAdmin, holds
                   <fieldset key={m} className="rounded-xl border border-grey-200">
                     <legend className="sr-only">{moduleLabel(m)}</legend>
                     <div className="flex flex-wrap items-center justify-between gap-2 border-b border-grey-100 bg-grey-50 px-3 py-2">
-                      <p className="text-xs font-semibold uppercase tracking-wide text-grey-700">{moduleLabel(m)} <span className="tnum font-normal normal-case text-grey-500">· {picked}/{ps.length}</span></p>
-                      {!matrixLocked && grantable.length > 0 && <button type="button" onClick={() => setGroup(ps, !allOn)} className="text-xs font-medium underline-offset-2 hover:underline">{allOn ? 'Clear' : grantable.length === ps.length ? 'Select all' : `Select all ${grantable.length} you hold`}</button>}
+                      <p className="text-xs font-semibold text-grey-700">{moduleLabel(m)} <span className="tnum font-normal normal-case text-grey-500">· {picked}/{ps.length}</span></p>
+                      {!matrixLocked && grantable.length > 0 && <button type="button" onClick={() => setGroup(ps, !allOn)} className="text-xs font-medium underline-offset-2 hover:underline">{allOn ? 'Clear' : grantable.length === ps.length ? 'Select All' : `Select all ${grantable.length} you hold`}</button>}
                     </div>
                     <ul className="divide-y divide-grey-100">
                       {ps.map((p) => {
@@ -394,7 +394,7 @@ function RoleEditor({ mode, role, allRoles, catalogue, held, isSuperAdmin, holds
           )}
           {editing && (added.length > 0 || removed.length > 0) && (
             <div className="mt-4 rounded-xl border border-grey-200 bg-grey-50 p-3 text-xs">
-              <p className="mb-1.5 font-semibold">Review your changes</p>
+              <p className="mb-1.5 font-semibold">Review Your Changes</p>
               <div className="flex flex-wrap gap-1">{added.map((p) => <PermChip key={p} k={p} added />)}{removed.map((p) => <PermChip key={p} k={p} removed />)}</div>
             </div>
           )}

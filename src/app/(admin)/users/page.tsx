@@ -184,12 +184,12 @@ export default function UsersPage() {
         emptyDescription="Try a different search, or create the first user with New User."
         toolbar={
           <>
-            <Input aria-label="Search users" placeholder="Search Name, Email or Mobile" value={filters.q} onChange={(e) => set('q', e.target.value)} className="w-72" />
+            <Input aria-label="Search Users" placeholder="Search Name, Email or Mobile" value={filters.q} onChange={(e) => set('q', e.target.value)} className="w-72" />
             <Select aria-label="Status" value={filters.status} onChange={(e) => set('status', e.target.value)} className="w-48">
               <option value="">All Statuses</option>
               {['PENDING_VERIFICATION', 'ACTIVE', 'SUSPENDED', 'DEACTIVATED', 'ANONYMISED'].map((s) => <option key={s} value={s}>{title(s)}</option>)}
             </Select>
-            <Input aria-label="Role key" placeholder="Role Key e.g. SUPER_ADMIN" value={filters.role} onChange={(e) => set('role', e.target.value.toUpperCase())} className="w-56" />
+            <Input aria-label="Role Key" placeholder="Role Key e.g. SUPER_ADMIN" value={filters.role} onChange={(e) => set('role', e.target.value.toUpperCase())} className="w-56" />
           </>
         }
       />

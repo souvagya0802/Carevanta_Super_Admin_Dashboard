@@ -43,6 +43,34 @@ describe('api client', () => {
     expect(session.hasRefreshToken()).toBe(false);
   });
 
+  it.each([429, 500, 503])('keeps the session when the refresh endpoint answers %i', async (status) => {
+    session.set({ accessToken: 'expired', refreshToken: 'rt1' });
+    const f = fetch as unknown as ReturnType<typeof vi.fn>;
+    f.mockResolvedValueOnce(json(401, { error: { code: 'TOKEN_INVALID', message: 'expired' } }));
+    f.mockResolvedValueOnce(json(status, { error: { code: 'RATE_LIMITED', message: 'slow down' } }));
+    await expect(api.get('/me')).rejects.toBeInstanceOf(ApiError);
+    expect(session.hasRefreshToken()).toBe(true);
+    expect(localStorage.getItem('carevanta.refreshToken')).toBe('rt1');
+  });
+
+  it('keeps the session when the refresh request fails on the network', async () => {
+    session.set({ accessToken: 'expired', refreshToken: 'rt1' });
+    const f = fetch as unknown as ReturnType<typeof vi.fn>;
+    f.mockResolvedValueOnce(json(401, { error: { code: 'TOKEN_INVALID', message: 'expired' } }));
+    f.mockRejectedValueOnce(new TypeError('Failed to fetch'));
+    await expect(api.get('/me')).rejects.toBeInstanceOf(ApiError);
+    expect(session.hasRefreshToken()).toBe(true);
+  });
+
+  it('clears the session when the refresh is forbidden (403)', async () => {
+    session.set({ accessToken: 'expired', refreshToken: 'rt1' });
+    const f = fetch as unknown as ReturnType<typeof vi.fn>;
+    f.mockResolvedValueOnce(json(401, { error: { code: 'TOKEN_INVALID', message: 'expired' } }));
+    f.mockResolvedValueOnce(json(403, { error: { code: 'FORBIDDEN', message: 'revoked' } }));
+    await expect(api.get('/me')).rejects.toBeInstanceOf(ApiError);
+    expect(session.hasRefreshToken()).toBe(false);
+  });
+
   it('maps validation issues to field errors', async () => {
     (fetch as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce(
       json(400, { error: { code: 'VALIDATION_FAILED', message: 'Invalid request body', details: { issues: [{ path: 'body.email', message: 'Invalid email', code: 'x' }] } } }),

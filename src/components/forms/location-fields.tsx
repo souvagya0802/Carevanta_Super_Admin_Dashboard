@@ -63,7 +63,7 @@ export function LocationFields({ value, onChange, errors = {}, show = { pincode:
   return (
     <div className={cx('grid gap-3 md:grid-cols-2 xl:grid-cols-4', className)}>
       {show.pincode !== false && (
-        <Field label="PIN code" required={required} error={errors.pincode} hint={pin.status === 'loading' ? 'Looking up…' : pin.status === 'found' ? `${pin.info!.district}, ${pin.info!.state}` : pin.status === 'unknown' ? 'Not in the PIN directory — fill the fields manually' : 'Auto-fills state and district'}>
+        <Field label="PIN Code" required={required} error={errors.pincode} hint={pin.status === 'loading' ? 'Looking up…' : pin.status === 'found' ? `${pin.info!.district}, ${pin.info!.state}` : pin.status === 'unknown' ? 'Not in the PIN directory — fill the fields manually' : 'Auto-fills state and district'}>
           <div className="relative">
             <Input inputMode="numeric" autoComplete="postal-code" value={value.pincode} onChange={(e) => void onPincode(e.target.value)} className="pr-9" />
             <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-grey-400">{pin.status === 'loading' ? <Loader2 size={14} className="animate-spin" aria-hidden /> : <MapPin size={14} aria-hidden />}</span>
@@ -72,7 +72,7 @@ export function LocationFields({ value, onChange, errors = {}, show = { pincode:
       )}
       <Field label="State / UT" required={required} error={errors.state}>
         <Select value={value.stateCode} onChange={(e) => onState(e.target.value)} disabled={states.isPending}>
-          <option value="">{states.isPending ? 'Loading…' : 'Select state'}</option>
+          <option value="">{states.isPending ? 'Loading…' : 'Select State'}</option>
           {states.data?.map((s) => <option key={s.code} value={s.code}>{s.name}</option>)}
         </Select>
       </Field>
@@ -80,7 +80,7 @@ export function LocationFields({ value, onChange, errors = {}, show = { pincode:
         <Input value={value.district} onChange={(e) => onChange({ district: e.target.value })} />
       </Field>
       {show.city !== false && (
-        <Field label="City / town" required={required} error={errors.city} hint={value.stateCode && cities.data ? `${cities.data.length} known towns in ${value.state}; type to search or enter your own` : undefined}>
+        <Field label="City / Town" required={required} error={errors.city} hint={value.stateCode && cities.data ? `${cities.data.length} known towns in ${value.state}; type to search or enter your own` : undefined}>
           <Input list={`${id}-cities`} value={value.city} onChange={(e) => onChange({ city: e.target.value })} autoComplete="address-level2" />
           <datalist id={`${id}-cities`}>
             {pin.info?.block && <option value={pin.info.block} />}
@@ -89,7 +89,7 @@ export function LocationFields({ value, onChange, errors = {}, show = { pincode:
         </Field>
       )}
       {show.locality !== false && (
-        <Field label="Locality / area" error={errors.locality} hint={pin.info ? `${pin.info.offices.length} post offices serve this PIN` : undefined}>
+        <Field label="Locality / Area" error={errors.locality} hint={pin.info ? `${pin.info.offices.length} post offices serve this PIN` : undefined}>
           <Input list={`${id}-localities`} value={value.locality} onChange={(e) => onChange({ locality: e.target.value })} />
           <datalist id={`${id}-localities`}>{pin.info?.offices.map((o) => <option key={o.name} value={o.name}>{o.branchType}</option>)}</datalist>
         </Field>

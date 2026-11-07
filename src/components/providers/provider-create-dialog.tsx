@@ -17,9 +17,9 @@ import { PracticeLocations, toLocationPayload, validateLocation, type LocationDr
 /* ─── Reference lists ─────────────────────────────────────────────────────── */
 const LANGUAGES = ['English', 'Hindi', 'Bengali', 'Odia', 'Assamese', 'Nepali', 'Santali', 'Urdu', 'Telugu', 'Tamil', 'Kannada', 'Malayalam', 'Marathi', 'Gujarati', 'Punjabi'];
 const ACCREDITATIONS = [
-  { code: 'NABH', label: 'NABH (hospital accreditation)' },
-  { code: 'NABL', label: 'NABL (laboratory accreditation)' },
-  { code: 'NABH_ENTRY_LEVEL', label: 'NABH entry level' },
+  { code: 'NABH', label: 'NABH (Hospital Accreditation)' },
+  { code: 'NABL', label: 'NABL (Laboratory Accreditation)' },
+  { code: 'NABH_ENTRY_LEVEL', label: 'NABH Entry Level' },
   { code: 'JCI', label: 'JCI' },
   { code: 'ISO_9001', label: 'ISO 9001' },
 ];
@@ -368,14 +368,14 @@ function ProviderCreateDialogInner({ open, onClose, initialType = 'HOSPITAL', on
                     <Field label={i === 0 ? 'Degree' : ''} error={form.formState.errors.qualifications?.[i]?.degree?.message}><Input placeholder="MBBS, MD, DNB…" {...r(`qualifications.${i}.degree`)} /></Field>
                     <Field label={i === 0 ? 'Institution' : ''} error={form.formState.errors.qualifications?.[i]?.institution?.message}><Input placeholder="University or college" {...r(`qualifications.${i}.institution`)} /></Field>
                     <Field label={i === 0 ? 'Year' : ''} error={form.formState.errors.qualifications?.[i]?.yearAwarded?.message}><Input inputMode="numeric" {...r(`qualifications.${i}.yearAwarded`)} /></Field>
-                    <div className={cx('flex items-end', i === 0 && 'pb-0')}><Button type="button" variant="ghost" size="sm" className="h-10 text-red" aria-label="Remove qualification" onClick={() => qualifications.remove(i)} disabled={qualifications.fields.length === 1}><Trash2 size={14} /></Button></div>
+                    <div className={cx('flex items-end', i === 0 && 'pb-0')}><Button type="button" variant="ghost" size="sm" className="h-10 text-red" aria-label="Remove Qualification" onClick={() => qualifications.remove(i)} disabled={qualifications.fields.length === 1}><Trash2 size={14} /></Button></div>
                   </div>
                 ))}
                 <Button type="button" variant="secondary" size="sm" onClick={() => qualifications.append({ degree: '', institution: '', yearAwarded: '' })}><Plus size={14} aria-hidden /> Add Qualification</Button>
               </div>
               <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
                 <Field label="Years of Experience"><Input type="number" min={0} max={70} {...r('yearsOfExperience')} /></Field>
-                <Field label="Gender"><Select {...r('gender')}><option value="">Prefer not to say</option><option value="FEMALE">Female</option><option value="MALE">Male</option><option value="OTHER">Other</option></Select></Field>
+                <Field label="Gender"><Select {...r('gender')}><option value="">Prefer Not to Say</option><option value="FEMALE">Female</option><option value="MALE">Male</option><option value="OTHER">Other</option></Select></Field>
                 <Field label="Default Consultation Fee (₹)" hint="Can differ per chamber later"><Input type="number" min={0} step="1" {...r('defaultFee')} /></Field>
               </div>
               <Field label="Languages Spoken" className="mt-3" hint="Helps patients pick a doctor they can talk to">
@@ -393,7 +393,7 @@ function ProviderCreateDialogInner({ open, onClose, initialType = 'HOSPITAL', on
                 {type === 'HOSPITAL' && <Field label="Inpatient Beds"><Input type="number" min={0} {...r('bedCount')} /></Field>}
                 {type === 'HOSPITAL' && <Field label="ICU Beds"><Input type="number" min={0} {...r('icuBedCount')} /></Field>}
                 {type === 'CLINIC' && <Field label="Observation / Day-Care Beds" hint="0 for consultation-only clinics"><Input type="number" min={0} {...r('bedCount')} /></Field>}
-                <div className="flex flex-col justify-end gap-2 pb-1 md:col-span-2"><Checkbox label="Has an emergency / casualty department" {...r('hasEmergency')} /><Checkbox label="Open 24×7" {...r('isOpen24x7')} /></div>
+                <div className="flex flex-col justify-end gap-2 pb-1 md:col-span-2"><Checkbox label="Has an Emergency / Casualty Department" {...r('hasEmergency')} /><Checkbox label="Open 24×7" {...r('isOpen24x7')} /></div>
               </div>
               <Field label="Accreditations" className="mt-3" hint="Only accreditations you can evidence with a certificate in the next step">
                 <ChipGroup options={ACCREDITATIONS} value={accreditations} onChange={(next) => form.setValue('accreditations', next)} columns="md:grid-cols-3" />
@@ -407,7 +407,7 @@ function ProviderCreateDialogInner({ open, onClose, initialType = 'HOSPITAL', on
               <div className="grid gap-2 md:grid-cols-3">
                 <Checkbox label="Pathology (blood, urine, biochemistry, microbiology)" {...r('offersPathology')} />
                 <Checkbox label="Imaging (X-ray, ultrasound, CT, MRI)" {...r('offersImaging')} />
-                <Checkbox label="Home sample collection" {...r('homeCollectionAvailable')} />
+                <Checkbox label="Home Sample Collection" {...r('homeCollectionAvailable')} />
               </div>
               {err('offersPathology') && <p role="alert" className="mt-2 text-xs text-red">{err('offersPathology')}</p>}
               <Field label="Typical Report Turnaround (Hours)" className="mt-3 max-w-xs" hint="Shown to patients as an estimate"><Input type="number" min={1} max={720} {...r('typicalTurnaroundHours')} /></Field>
@@ -431,7 +431,7 @@ function ProviderCreateDialogInner({ open, onClose, initialType = 'HOSPITAL', on
                 <Field label="Licence Valid Until" required><Input type="date" {...r('drugLicenseValidUntil')} /></Field>
                 <Field label="Registered Pharmacist" hint="Name as on the Pharmacy Council register"><Input {...r('pharmacistName')} /></Field>
                 <Field label="Pharmacist Registration No." hint="State Pharmacy Council"><Input {...r('pharmacistRegistrationNo')} /></Field>
-                <div className="flex items-end pb-2 md:col-span-2 xl:col-span-3"><Checkbox label="Home delivery (Schedule H / H1 delivery is enabled only after legal review)" {...r('homeDeliveryAvailable')} /></div>
+                <div className="flex items-end pb-2 md:col-span-2 xl:col-span-3"><Checkbox label="Home Delivery (Schedule H / H1 Delivery Is Enabled Only After Legal Review)" {...r('homeDeliveryAvailable')} /></div>
               </div>
             </FormSection>
           )}
@@ -491,19 +491,19 @@ function DocumentsStep({ providerId, type }: { providerId: string; type: Provide
         </div>
         <Button onClick={() => upload.mutate()} loading={upload.isPending} disabled={!file}><Upload size={16} /> Upload</Button>
         <div>
-          <h3 className="mb-1 text-xs font-semibold uppercase text-grey-500">Uploaded</h3>
+          <h3 className="mb-1 text-xs font-semibold text-grey-500">Uploaded</h3>
           {docs.data?.length ? (
             <ul className="divide-y divide-grey-200 text-sm">{docs.data.map((d) => <li key={d.id} className="flex items-center justify-between gap-2 py-1.5"><span>{title(d.documentType)} <span className="text-xs text-grey-500">{d.fileName} · {Math.round(d.sizeBytes / 1024)} kB</span></span><Badge>UPLOADED</Badge></li>)}</ul>
           ) : <p className="text-sm text-grey-500">Nothing uploaded yet.</p>}
         </div>
       </div>
       <aside className="h-fit rounded-2xl border border-grey-200 bg-paper p-5 text-sm shadow-[var(--shadow-card)]">
-        <h3 className="text-xs font-semibold uppercase text-grey-500">Recommended for {title(type)}</h3>
+        <h3 className="text-xs font-semibold text-grey-500">Recommended for {title(type)}</h3>
         <ul className="mt-2 space-y-1.5">
           {SUGGESTED_DOCS[type].map((t) => (
             <li key={t} className="flex items-center justify-between gap-2">
               <button type="button" className="text-left underline-offset-2 hover:underline" onClick={() => setDocType(t)}>{title(t)}</button>
-              {uploadedTypes.has(t) ? <CheckCircle2 size={16} className="text-green" aria-label="uploaded" /> : <span className="text-xs text-grey-400">pending</span>}
+              {uploadedTypes.has(t) ? <CheckCircle2 size={16} className="text-green" aria-label="Uploaded" /> : <span className="text-xs text-grey-400">Pending</span>}
             </li>
           ))}
         </ul>

@@ -74,3 +74,7 @@ Items are hidden when the signed-in user lacks the permission; pages additionall
 ## Tests
 
 `src/lib/api.test.ts` (token refresh, error mapping, idempotency header), `src/components/layout/nav.test.ts` (26 areas, permission filtering), `src/components/ui/data-table.test.tsx` (cursor paging, empty/error states), `src/app/login/page.test.tsx` (validation, lockout message, redirect).
+
+## Demo Logins
+
+All demo accounts (Super Admin, one per provider type, patient) with passwords and what data each one sees: see [Carevanta_Backedn_Api/docs/demo-logins.md](../Carevanta_Backedn_Api/docs/demo-logins.md). Development only.

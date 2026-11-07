@@ -58,7 +58,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <span className="block truncate text-[11px] text-grey-400">Admin Panel</span>
           </span>
         </Link>
-        <button className="text-grey-400 hover:text-paper lg:hidden" aria-label="Close menu" onClick={() => setOpen(false)}><X size={18} /></button>
+        <button type="button" className="-mr-2 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-grey-400 hover:bg-white/10 hover:text-paper lg:hidden" aria-label="Close Menu" onClick={() => setOpen(false)}><X size={18} aria-hidden /></button>
       </div>
       <div className="dark-scroll flex-1 overflow-y-auto px-3 pb-4">
         {NAV_GROUPS.map((g) => {
@@ -66,7 +66,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           if (!group.length) return null;
           return (
             <div key={g} className="mb-4">
-              <p className="px-2 pb-1.5 text-[10px] font-semibold uppercase tracking-widest text-grey-500">{g}</p>
+              <p className="px-2 pb-1.5 text-[10px] font-semibold text-grey-500">{g}</p>
               <ul className="space-y-0.5">
                 {group.map((i) => (
                   <li key={i.href}>
@@ -74,7 +74,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                       href={i.href}
                       aria-current={isActive(i.href) ? 'page' : undefined}
                       onClick={() => setOpen(false)}
-                      className={cx('flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm transition-colors', isActive(i.href) ? 'bg-paper font-semibold text-ink shadow-sm' : 'text-grey-300 hover:bg-white/10 hover:text-paper')}
+                      className={cx('flex min-h-10 items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm transition-colors lg:min-h-0', isActive(i.href) ? 'bg-paper font-semibold text-ink shadow-sm' : 'text-grey-300 hover:bg-white/10 hover:text-paper')}
                     >
                       <i.icon size={16} aria-hidden className={isActive(i.href) ? 'text-ink' : 'text-grey-400'} />
                       <span className="truncate">{i.label}</span>
@@ -93,7 +93,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <span className="block truncate text-sm font-medium">{me.fullName}</span>
             <span className="block truncate text-[11px] text-grey-400">{me.email ?? me.phone ?? me.roles.join(', ')}</span>
           </span>
-          <button aria-label="Sign out" title="Sign out" onClick={signOut} className="text-grey-400 hover:text-paper"><LogOut size={16} /></button>
+          <button type="button" aria-label="Sign Out" title="Sign Out" onClick={signOut} className="-mr-2 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-grey-400 hover:bg-white/10 hover:text-paper"><LogOut size={16} aria-hidden /></button>
         </div>
       </div>
     </nav>
@@ -109,8 +109,9 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       )}
       <div className="flex h-full min-w-0 flex-1 flex-col">
-        <header className="flex h-16 shrink-0 items-center gap-3 border-b border-grey-200 bg-paper/90 px-4 backdrop-blur lg:px-8">
-          <button className="lg:hidden" aria-label="Open menu" onClick={() => setOpen(true)}><Menu size={20} /></button>
+        <header className="flex h-[72px] shrink-0 items-center gap-3 border-b border-grey-200 bg-paper/90 px-4 backdrop-blur lg:h-16 lg:px-8">
+          <button type="button" className="-ml-2 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg hover:bg-grey-100 lg:hidden" aria-label="Open Menu" aria-expanded={open} onClick={() => setOpen(true)}><Menu size={20} aria-hidden /></button>
+          <Logo size="nav" className="shrink-0 rounded-lg lg:hidden" />
           <div className="min-w-0 flex-1">
             <p className="truncate text-base font-semibold leading-tight">{current?.label ?? branding.name}</p>
             <p className="hidden truncate text-xs text-grey-500 sm:block">{current ? `${current.group} · ${branding.name}` : branding.tagline}</p>
@@ -120,18 +121,18 @@ export function AppShell({ children }: { children: ReactNode }) {
             <input aria-label="Search users or paste a provider id" placeholder="Search…" value={search} onChange={(e) => setSearch(e.target.value)} className="h-10 w-56 rounded-lg border border-grey-200 bg-grey-50 pr-3 pl-9 text-sm placeholder:text-grey-400 focus:border-ink focus:bg-paper lg:w-72" />
           </form>
           <Link href="/notifications" aria-label={`Notifications${failedCount ? `, ${failedCount} failed` : ''}`} className="relative flex h-10 w-10 items-center justify-center rounded-full text-grey-600 hover:bg-grey-100 hover:text-ink">
-            <Bell size={18} />
+            <Bell size={18} aria-hidden />
             {failedCount > 0 && <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-red ring-2 ring-paper" />}
           </Link>
           <details className="relative">
-            <summary className="flex cursor-pointer list-none items-center gap-2 rounded-full p-1 pr-2 hover:bg-grey-100 [&::-webkit-details-marker]:hidden">
+            <summary aria-label={`Account Menu for ${me.fullName}`} title="Account Menu" className="flex min-h-10 cursor-pointer list-none items-center gap-2 rounded-full p-1 pr-2 hover:bg-grey-100 [&::-webkit-details-marker]:hidden">
               <span className="flex h-8 w-8 items-center justify-center rounded-full bg-ink text-xs font-bold text-paper">{initials}</span>
-              <ChevronDown size={14} className="text-grey-500" />
+              <ChevronDown size={14} aria-hidden className="text-grey-500" />
             </summary>
             <div className="absolute right-0 z-30 mt-2 w-60 rounded-xl border border-grey-200 bg-paper p-2 text-sm shadow-[var(--shadow-float)]">
               <p className="truncate px-2 py-1 font-medium">{me.fullName}</p>
               <p className="truncate px-2 pb-2 text-xs text-grey-500">{me.roles.join(', ') || 'No Platform Role'}</p>
-              <Link href="/account/password" className="flex items-center gap-2 rounded-lg px-2 py-2 hover:bg-grey-100"><KeyRound size={14} /> Change Password</Link>
+              <Link href="/account/password" className="flex min-h-10 items-center gap-2 rounded-lg px-2 py-2 hover:bg-grey-100"><KeyRound size={14} aria-hidden /> Change Password</Link>
               <Button variant="ghost" size="sm" className="w-full justify-start" onClick={signOut}><LogOut size={14} /> Sign Out</Button>
             </div>
           </details>

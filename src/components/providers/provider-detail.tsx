@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { api, ApiError } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { useAction, useGet } from '@/lib/hooks';
-import { date, dateTime, money, minutes, title } from '@/lib/format';
+import { date, dateTime, money, minutes, rating, title } from '@/lib/format';
 import { DOCUMENT_TYPES, slugForType } from '@/lib/providers-meta';
 import { Badge, Button, Card, ConfirmDialog, DescriptionList, Dialog, ErrorState, Field, Input, PageHeader, Select, Skeleton, Tabs, Textarea } from '@/components/ui/primitives';
 import { useToast } from '@/components/ui/toast';
@@ -49,12 +49,12 @@ export function ProviderDetail({ id }: { id: string }) {
   const d = p.data;
   const tabs = [
     { key: 'overview', label: 'Overview' },
-    { key: 'locations', label: 'Locations & hours', count: d.locations.length },
+    { key: 'locations', label: 'Locations & Hours', count: d.locations.length },
     { key: 'members', label: 'Staff', count: d.members.length },
     { key: 'documents', label: 'Documents', count: d.counts.documents },
-    { key: 'services', label: 'Services & pricing' },
-    ...(d.facility ? [{ key: 'departments', label: 'Departments & amenities' }] : []),
-    { key: 'payout', label: 'Payout accounts' },
+    { key: 'services', label: 'Services & Pricing' },
+    ...(d.facility ? [{ key: 'departments', label: 'Departments & Amenities' }] : []),
+    { key: 'payout', label: 'Payout Accounts' },
     { key: 'history', label: 'History', count: d.statusHistory.length },
   ];
 
@@ -68,17 +68,17 @@ export function ProviderDetail({ id }: { id: string }) {
           <>
             <Badge>{d.status}</Badge>
             {d.isListed && <Badge tone="ACTIVE">listed</Badge>}
-            {can('providers.update') && ['DRAFT', 'CHANGES_REQUESTED', 'REJECTED'].includes(d.status) && <Button onClick={() => submit.mutate()} loading={submit.isPending}>Submit for verification</Button>}
-            {d.latestVerificationCase && ['SUBMITTED', 'UNDER_REVIEW', 'CHANGES_REQUESTED'].includes(d.status) && <Link href={`/applications/${d.latestVerificationCase.id}`}><Button variant="secondary">Open verification case</Button></Link>}
+            {can('providers.update') && ['DRAFT', 'CHANGES_REQUESTED', 'REJECTED'].includes(d.status) && <Button onClick={() => submit.mutate()} loading={submit.isPending}>Submit for Verification</Button>}
+            {d.latestVerificationCase && ['SUBMITTED', 'UNDER_REVIEW', 'CHANGES_REQUESTED'].includes(d.status) && <Link href={`/applications/${d.latestVerificationCase.id}`}><Button variant="secondary">Open Verification Case</Button></Link>}
             {can('providers.suspend') && d.status === 'APPROVED' && <Button variant="danger" onClick={() => setStatusAction('SUSPEND')}>Suspend</Button>}
             {can('providers.suspend') && d.status === 'SUSPENDED' && <Button onClick={() => setStatusAction('REACTIVATE')}>Reactivate</Button>}
             {can('providers.suspend') && d.status !== 'DEACTIVATED' && <Button variant="secondary" onClick={() => setStatusAction('DEACTIVATE')}>Deactivate</Button>}
             {d.type === 'DOCTOR' && <Link href={`/affiliations?doctorProviderId=${d.id}`}><Button variant="secondary">Affiliations ({d.counts.affiliationsAsDoctor})</Button></Link>}
-            {(d.type === 'HOSPITAL' || d.type === 'CLINIC') && <Link href={`/affiliations?facilityProviderId=${d.id}`}><Button variant="secondary">Affiliated doctors ({d.counts.affiliationsAsFacility})</Button></Link>}
+            {(d.type === 'HOSPITAL' || d.type === 'CLINIC') && <Link href={`/affiliations?facilityProviderId=${d.id}`}><Button variant="secondary">Affiliated Doctors ({d.counts.affiliationsAsFacility})</Button></Link>}
           </>
         }
       />
-      {d.statusReason && <p className="mb-4 border border-grey-300 px-3 py-2 text-sm"><span className="font-medium">Status note:</span> {d.statusReason}</p>}
+      {d.statusReason && <p className="mb-4 border border-grey-300 px-3 py-2 text-sm"><span className="font-medium">Status Note:</span> {d.statusReason}</p>}
       <Tabs tabs={tabs} active={tab} onChange={setTab} />
       <div className="mt-4">
         {tab === 'overview' && <Overview d={d} />}
@@ -89,14 +89,14 @@ export function ProviderDetail({ id }: { id: string }) {
         {tab === 'departments' && <Departments d={d} />}
         {tab === 'payout' && <Payouts d={d} />}
         {tab === 'history' && (
-          <Card title="Status history">
+          <Card title="Status History">
             <ul className="divide-y divide-grey-200 text-sm">
               {d.statusHistory.map((h, i) => <li key={i} className="flex flex-wrap justify-between gap-2 py-2"><span>{h.fromStatus ? `${title(h.fromStatus)} → ` : ''}<Badge>{h.toStatus}</Badge> <span className="text-grey-600">{h.reason}</span></span><span className="text-xs text-grey-500">{dateTime(h.createdAt)}</span></li>)}
             </ul>
           </Card>
         )}
       </div>
-      <ConfirmDialog open={!!statusAction} onClose={() => setStatusAction(null)} onConfirm={() => statusAction && status.mutate(statusAction)} title={`${title(statusAction ?? '')} provider`} message={statusAction === 'SUSPEND' ? 'Suspension removes the provider from search and blocks all future open slots immediately.' : statusAction === 'DEACTIVATE' ? 'Deactivation is permanent for this record.' : 'The provider will be listed again and blocked slots reopened.'} confirmLabel={title(statusAction ?? '')} loading={status.isPending} danger={statusAction !== 'REACTIVATE'}>
+      <ConfirmDialog open={!!statusAction} onClose={() => setStatusAction(null)} onConfirm={() => statusAction && status.mutate(statusAction)} title={`${title(statusAction ?? '')} Provider`} message={statusAction === 'SUSPEND' ? 'Suspension removes the provider from search and blocks all future open slots immediately.' : statusAction === 'DEACTIVATE' ? 'Deactivation is permanent for this record.' : 'The provider will be listed again and blocked slots reopened.'} confirmLabel={title(statusAction ?? '')} loading={status.isPending} danger={statusAction !== 'REACTIVATE'}>
         <Field label="Reason" required className="mt-3"><Textarea value={reason} onChange={(e) => setReason(e.target.value)} /></Field>
       </ConfirmDialog>
     </RequirePermission>
@@ -105,8 +105,8 @@ export function ProviderDetail({ id }: { id: string }) {
 
 function Overview({ d }: { d: ProviderFull }) {
   const generic = [
-    { label: 'Contact email', value: d.contactEmail }, { label: 'Contact phone', value: d.contactPhone }, { label: 'GSTIN', value: d.gstin }, { label: 'Registration no.', value: d.registrationNumber },
-    { label: 'Submitted', value: dateTime(d.submittedAt) }, { label: 'Approved', value: dateTime(d.approvedAt) }, { label: 'Rating', value: d.ratingAverage != null ? `${d.ratingAverage} (${d.ratingCount})` : 'No reviews yet' }, { label: 'Record version', value: d.version },
+    { label: 'Contact Email', value: d.contactEmail }, { label: 'Contact Phone', value: d.contactPhone }, { label: 'GSTIN', value: d.gstin }, { label: 'Registration No.', value: d.registrationNumber },
+    { label: 'Submitted', value: dateTime(d.submittedAt) }, { label: 'Approved', value: dateTime(d.approvedAt) }, { label: 'Rating', value: d.ratingAverage != null ? `${rating(d.ratingAverage)} (${d.ratingCount})` : 'No reviews yet' }, { label: 'Record Version', value: d.version },
   ];
   return (
     <div className="grid gap-4 lg:grid-cols-2">
@@ -117,26 +117,26 @@ function Overview({ d }: { d: ProviderFull }) {
       {d.doctor && (
         <Card title="Doctor">
           <DescriptionList items={[
-            { label: 'Login account', value: <Link className="underline" href={`/users/${d.doctor.user.id}`}>{d.doctor.user.fullName}</Link> },
+            { label: 'Login Account', value: <Link className="underline" href={`/users/${d.doctor.user.id}`}>{d.doctor.user.fullName}</Link> },
             { label: 'Gender', value: title(d.doctor.gender) }, { label: 'Experience', value: d.doctor.yearsOfExperience != null ? `${d.doctor.yearsOfExperience} years` : null },
-            { label: 'Languages', value: d.doctor.languages.join(', ') }, { label: 'Default fee', value: money(d.doctor.defaultFeeMinor) },
+            { label: 'Languages', value: d.doctor.languages.join(', ') }, { label: 'Default Fee', value: money(d.doctor.defaultFeeMinor) },
             { label: 'Specialities', value: d.doctor.specialities.map((s) => `${s.name}${s.isPrimary ? ' (primary)' : ''}${s.verified ? ' ✓' : ''}`).join(', ') || '—' },
           ]} />
-          <h3 className="mt-4 text-xs font-semibold uppercase text-grey-500">Council registrations</h3>
+          <h3 className="mt-4 text-xs font-semibold text-grey-500">Council Registrations</h3>
           <ul className="mt-1 text-sm">{d.doctor.registrations.map((r) => <li key={r.id} className="flex justify-between border-t border-grey-200 py-1"><span>{r.council} · {r.registrationNumber}{r.validUntil ? ` · valid to ${date(r.validUntil)}` : ''}</span>{r.verifiedAt ? <Badge tone="VERIFIED">verified</Badge> : <Badge>unverified</Badge>}</li>)}</ul>
-          <h3 className="mt-4 text-xs font-semibold uppercase text-grey-500">Qualifications</h3>
+          <h3 className="mt-4 text-xs font-semibold text-grey-500">Qualifications</h3>
           <ul className="mt-1 text-sm">{d.doctor.qualifications.map((q) => <li key={q.id} className="border-t border-grey-200 py-1">{q.degree}, {q.institution}{q.yearAwarded ? ` (${q.yearAwarded})` : ''} {q.verified && <Badge tone="VERIFIED">verified</Badge>}</li>)}</ul>
           {d.doctor.bio && <p className="mt-3 text-sm text-grey-700">{d.doctor.bio}</p>}
         </Card>
       )}
-      {d.facility && <Card title="Facility"><DescriptionList items={[{ label: 'Ownership', value: title(d.facility.ownershipType) }, { label: 'Beds', value: d.facility.bedCount }, { label: 'ICU beds', value: d.facility.icuBedCount }, { label: 'Emergency', value: d.facility.hasEmergency ? 'Yes' : 'No' }, { label: 'Open 24×7', value: d.facility.isOpen24x7 ? 'Yes' : 'No' }, { label: 'Establishment reg. no.', value: d.facility.establishmentRegistrationNo }, { label: 'Registration authority', value: d.facility.establishmentRegistrationAuth }, { label: 'Accreditations', value: d.facility.accreditations.join(', ') }]} /></Card>}
-      {d.diagnostic && <Card title="Diagnostics"><DescriptionList items={[{ label: 'Pathology', value: d.diagnostic.offersPathology ? 'Yes' : 'No' }, { label: 'Imaging', value: d.diagnostic.offersImaging ? 'Yes' : 'No' }, { label: 'Home collection', value: d.diagnostic.homeCollectionAvailable ? 'Yes' : 'No' }, { label: 'Establishment reg. no.', value: d.diagnostic.establishmentRegistrationNo }, { label: 'NABL certificate', value: d.diagnostic.nablCertificateNo }, { label: 'NABL scope', value: d.diagnostic.nablScope }, { label: 'AERB licence', value: d.diagnostic.aerbLicenseNo }, { label: 'PC-PNDT registration', value: d.diagnostic.pcpndtRegistrationNo }, { label: 'Typical turnaround', value: d.diagnostic.typicalTurnaroundHours != null ? `${d.diagnostic.typicalTurnaroundHours} h` : null }]} /></Card>}
-      {d.pharmacy && <Card title="Pharmacy"><DescriptionList items={[{ label: 'Retail drug licence', value: d.pharmacy.retailDrugLicenseNo }, { label: 'Wholesale drug licence', value: d.pharmacy.wholesaleDrugLicenseNo }, { label: 'Licence valid until', value: date(d.pharmacy.drugLicenseValidUntil) }, { label: 'Pharmacist', value: d.pharmacy.pharmacistName }, { label: 'Pharmacist reg. no.', value: d.pharmacy.pharmacistRegistrationNo }, { label: 'Home delivery', value: d.pharmacy.homeDeliveryAvailable ? 'Yes' : 'No' }]} /></Card>}
-      {d.ambulance && <Card title="Ambulance operator" actions={<Link className="text-xs underline" href={`/ambulance?operatorProviderId=${d.id}`}>Vehicles & crew</Link>}><DescriptionList items={[{ label: 'Dispatch phone', value: d.ambulance.dispatchPhone }, { label: 'Open 24×7', value: d.ambulance.isOpen24x7 ? 'Yes' : 'No' }, { label: 'Fleet size', value: d.ambulance.fleetSize }]} /></Card>}
+      {d.facility && <Card title="Facility"><DescriptionList items={[{ label: 'Ownership', value: title(d.facility.ownershipType) }, { label: 'Beds', value: d.facility.bedCount }, { label: 'ICU Beds', value: d.facility.icuBedCount }, { label: 'Emergency', value: d.facility.hasEmergency ? 'Yes' : 'No' }, { label: 'Open 24×7', value: d.facility.isOpen24x7 ? 'Yes' : 'No' }, { label: 'Establishment Reg. No.', value: d.facility.establishmentRegistrationNo }, { label: 'Registration Authority', value: d.facility.establishmentRegistrationAuth }, { label: 'Accreditations', value: d.facility.accreditations.join(', ') }]} /></Card>}
+      {d.diagnostic && <Card title="Diagnostics"><DescriptionList items={[{ label: 'Pathology', value: d.diagnostic.offersPathology ? 'Yes' : 'No' }, { label: 'Imaging', value: d.diagnostic.offersImaging ? 'Yes' : 'No' }, { label: 'Home Collection', value: d.diagnostic.homeCollectionAvailable ? 'Yes' : 'No' }, { label: 'Establishment Reg. No.', value: d.diagnostic.establishmentRegistrationNo }, { label: 'NABL Certificate', value: d.diagnostic.nablCertificateNo }, { label: 'NABL Scope', value: d.diagnostic.nablScope }, { label: 'AERB Licence', value: d.diagnostic.aerbLicenseNo }, { label: 'PC-PNDT Registration', value: d.diagnostic.pcpndtRegistrationNo }, { label: 'Typical Turnaround', value: d.diagnostic.typicalTurnaroundHours != null ? `${d.diagnostic.typicalTurnaroundHours} h` : null }]} /></Card>}
+      {d.pharmacy && <Card title="Pharmacy"><DescriptionList items={[{ label: 'Retail Drug Licence', value: d.pharmacy.retailDrugLicenseNo }, { label: 'Wholesale Drug Licence', value: d.pharmacy.wholesaleDrugLicenseNo }, { label: 'Licence Valid Until', value: date(d.pharmacy.drugLicenseValidUntil) }, { label: 'Pharmacist', value: d.pharmacy.pharmacistName }, { label: 'Pharmacist Reg. No.', value: d.pharmacy.pharmacistRegistrationNo }, { label: 'Home Delivery', value: d.pharmacy.homeDeliveryAvailable ? 'Yes' : 'No' }]} /></Card>}
+      {d.ambulance && <Card title="Ambulance Operator" actions={<Link className="text-xs underline" href={`/ambulance?operatorProviderId=${d.id}`}>Vehicles & Crew</Link>}><DescriptionList items={[{ label: 'Dispatch Phone', value: d.ambulance.dispatchPhone }, { label: 'Open 24×7', value: d.ambulance.isOpen24x7 ? 'Yes' : 'No' }, { label: 'Fleet Size', value: d.ambulance.fleetSize }]} /></Card>}
       {d.latestVerificationCase && (
-        <Card title="Latest verification case" actions={<Link className="text-xs underline" href={`/applications/${d.latestVerificationCase.id}`}>Open</Link>}>
+        <Card title="Latest Verification Case" actions={<Link className="text-xs underline" href={`/applications/${d.latestVerificationCase.id}`}>Open</Link>}>
           <p className="text-sm"><Badge>{d.latestVerificationCase.status}</Badge> <span className="ml-2 text-grey-600">{title(d.latestVerificationCase.kind)}</span></p>
-          <ul className="mt-3 space-y-1 text-sm">{d.latestVerificationCase.checks.map((c) => <li key={c.checkType} className="flex justify-between"><span>{title(c.checkType)}{c.isRequired ? '' : ' (optional)'}</span><Badge>{c.status}</Badge></li>)}</ul>
+          <ul className="mt-3 space-y-1 text-sm">{d.latestVerificationCase.checks.map((c) => <li key={c.checkType} className="flex justify-between"><span>{title(c.checkType)}{c.isRequired ? '' : ' (Optional)'}</span><Badge>{c.status}</Badge></li>)}</ul>
         </Card>
       )}
     </div>
@@ -150,10 +150,10 @@ function Locations({ d }: { d: ProviderFull }) {
   return (
     <div className="space-y-4">
       {d.locations.map((l) => (
-        <Card key={l.id} title={`${l.name}${l.isPrimary ? ' · primary' : ''}`} actions={can('providers.update') && <div className="flex gap-2"><Button size="sm" variant="secondary" onClick={() => setEditing(l)}>Opening hours</Button><Button size="sm" variant="ghost" onClick={() => toggle.mutate(l)}>{l.isActive ? 'Deactivate' : 'Activate'}</Button></div>}>
+        <Card key={l.id} title={`${l.name}${l.isPrimary ? ' · Primary' : ''}`} actions={can('providers.update') && <div className="flex gap-2"><Button size="sm" variant="secondary" onClick={() => setEditing(l)}>Opening Hours</Button><Button size="sm" variant="ghost" onClick={() => toggle.mutate(l)}>{l.isActive ? 'Deactivate' : 'Activate'}</Button></div>}>
           <DescriptionList items={[{ label: 'Address', value: [l.addressLine1, l.addressLine2, l.locality, l.city, l.district, l.state, l.pincode].filter(Boolean).join(', ') }, { label: 'Phone', value: l.phone }, { label: 'Coordinates', value: l.latitude != null ? `${l.latitude}, ${l.longitude}` : 'Not set — provider will not appear in distance search' }, { label: 'Region', value: l.region?.name }, { label: 'Active', value: l.isActive ? 'Yes' : 'No' }]} />
-          <h3 className="mt-3 text-xs font-semibold uppercase text-grey-500">Opening hours</h3>
-          {l.operatingHours.length === 0 ? <p className="text-sm text-grey-500">Not set</p> : <ul className="mt-1 grid gap-x-6 text-sm sm:grid-cols-2">{l.operatingHours.map((h, i) => <li key={i}>{DAYS[h.dayOfWeek]}: {h.isClosed ? 'Closed' : `${minutes(h.opensAtMin)}–${minutes(h.closesAtMin)}`}</li>)}</ul>}
+          <h3 className="mt-3 text-xs font-semibold text-grey-500">Opening Hours</h3>
+          {l.operatingHours.length === 0 ? <p className="text-sm text-grey-500">Not Set</p> : <ul className="mt-1 grid gap-x-6 text-sm sm:grid-cols-2">{l.operatingHours.map((h, i) => <li key={i}>{DAYS[h.dayOfWeek]}: {h.isClosed ? 'Closed' : `${minutes(h.opensAtMin)}–${minutes(h.closesAtMin)}`}</li>)}</ul>}
         </Card>
       ))}
       {d.locations.length === 0 && <p className="text-sm text-grey-500">No locations. A provider needs an active location before it can be submitted or listed.</p>}
@@ -170,7 +170,7 @@ function HoursDialog({ providerId, location, onClose }: { providerId: string; lo
   const toMin = (s: string) => { const [h, m] = s.split(':').map(Number); return (h ?? 0) * 60 + (m ?? 0); };
   const save = useAction(() => api.put(`/admin/providers/${providerId}/locations/${location.id}/hours`, { hours: rows.filter((r) => r.open).map((r) => ({ dayOfWeek: r.dow, opensAtMin: toMin(r.opens), closesAtMin: toMin(r.closes) })) }), { success: 'Opening hours saved', invalidate: [`/admin/providers/${providerId}`], onSuccess: onClose });
   return (
-    <Dialog open onClose={onClose} title={`Opening hours — ${location.name}`} footer={<><Button variant="ghost" onClick={onClose}>Cancel</Button><Button onClick={() => save.mutate()} loading={save.isPending}>Save</Button></>}>
+    <Dialog open onClose={onClose} title={`Opening Hours — ${location.name}`} footer={<><Button variant="ghost" onClick={onClose}>Cancel</Button><Button onClick={() => save.mutate()} loading={save.isPending}>Save</Button></>}>
       <table className="w-full text-sm"><tbody>
         {rows.map((r, i) => (
           <tr key={r.dow} className="border-t border-grey-200">
@@ -192,9 +192,9 @@ function Members({ d }: { d: ProviderFull }) {
   const add = useAction(() => api.post(`/admin/providers/${d.id}/members`, { userId, memberRole: role }), { success: 'Member added', invalidate: [`/admin/providers/${d.id}`], onSuccess: () => { setAdding(false); setUserId(''); } });
   const remove = useAction((memberId: string) => api.delete(`/admin/providers/${d.id}/members/${memberId}`), { success: 'Member removed', invalidate: [`/admin/providers/${d.id}`] });
   return (
-    <Card title="Authorised users" actions={can('providers.members.manage') && <Button size="sm" variant="secondary" onClick={() => setAdding(true)}>Add member</Button>}>
+    <Card title="Authorised Users" actions={can('providers.members.manage') && <Button size="sm" variant="secondary" onClick={() => setAdding(true)}>Add Member</Button>}>
       <table className="w-full text-sm">
-        <thead className="text-left text-xs uppercase text-grey-500"><tr><th className="py-1">User</th><th>Contact</th><th>Role</th><th>Status</th><th /></tr></thead>
+        <thead className="text-left text-xs text-grey-500"><tr><th className="py-1">User</th><th>Contact</th><th>Role</th><th>Status</th><th /></tr></thead>
         <tbody>
           {d.members.map((m) => (
             <tr key={m.id} className="border-t border-grey-200">
@@ -204,9 +204,9 @@ function Members({ d }: { d: ProviderFull }) {
           ))}
         </tbody>
       </table>
-      <Dialog open={adding} onClose={() => setAdding(false)} title="Add a member" footer={<><Button variant="ghost" onClick={() => setAdding(false)}>Cancel</Button><Button onClick={() => add.mutate()} loading={add.isPending} disabled={!userId}>Add</Button></>}>
-        <Field label="User id" hint="Find the user under Users and copy their id"><Input value={userId} onChange={(e) => setUserId(e.target.value.trim())} /></Field>
-        <Field label="Role" className="mt-3"><Select value={role} onChange={(e) => setRole(e.target.value)}>{['OWNER', 'ADMIN', 'STAFF', 'PHARMACIST', 'LAB_TECHNICIAN', 'DISPATCHER'].map((r) => <option key={r}>{r}</option>)}</Select></Field>
+      <Dialog open={adding} onClose={() => setAdding(false)} title="Add a Member" footer={<><Button variant="ghost" onClick={() => setAdding(false)}>Cancel</Button><Button onClick={() => add.mutate()} loading={add.isPending} disabled={!userId}>Add</Button></>}>
+        <Field label="User ID" hint="Find the user under Users and copy their id"><Input value={userId} onChange={(e) => setUserId(e.target.value.trim())} /></Field>
+        <Field label="Role" className="mt-3"><Select value={role} onChange={(e) => setRole(e.target.value)}>{['OWNER', 'ADMIN', 'STAFF', 'PHARMACIST', 'LAB_TECHNICIAN', 'DISPATCHER'].map((r) => <option key={r} value={r}>{title(r)}</option>)}</Select></Field>
       </Dialog>
     </Card>
   );
@@ -245,11 +245,11 @@ function Documents({ d }: { d: ProviderFull }) {
   return (
     <div className="space-y-4">
       {can('providers.update') && (
-        <Card title="Upload a credential document">
+        <Card title="Upload a Credential Document">
           <div className="grid gap-3 md:grid-cols-4">
             <Field label="Type"><Select value={docType} onChange={(e) => setDocType(e.target.value)}>{DOCUMENT_TYPES.map((t) => <option key={t} value={t}>{title(t)}</option>)}</Select></Field>
-            <Field label="Document number"><Input value={docNo} onChange={(e) => setDocNo(e.target.value)} /></Field>
-            <Field label="Expires on"><Input type="date" value={expires} onChange={(e) => setExpires(e.target.value)} /></Field>
+            <Field label="Document Number"><Input value={docNo} onChange={(e) => setDocNo(e.target.value)} /></Field>
+            <Field label="Expires On"><Input type="date" value={expires} onChange={(e) => setExpires(e.target.value)} /></Field>
             <Field label="File" hint="PDF, JPEG or PNG · max 10 MB"><Input type="file" accept="application/pdf,image/jpeg,image/png" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="h-auto py-1.5" /></Field>
           </div>
           <Button className="mt-3" onClick={() => upload.mutate()} loading={upload.isPending} disabled={!file}>Upload</Button>
@@ -258,7 +258,7 @@ function Documents({ d }: { d: ProviderFull }) {
       <Card title="Documents">
         {docs.isPending ? <Skeleton /> : docs.isError ? <ErrorState error={docs.error} /> : docs.data.length === 0 ? <p className="text-sm text-grey-500">No documents uploaded.</p> : (
           <table className="w-full text-sm">
-            <thead className="text-left text-xs uppercase text-grey-500"><tr><th className="py-1">Type</th><th>File</th><th>Number</th><th>Expires</th><th>Status</th><th /></tr></thead>
+            <thead className="text-left text-xs text-grey-500"><tr><th className="py-1">Type</th><th>File</th><th>Number</th><th>Expires</th><th>Status</th><th /></tr></thead>
             <tbody>
               {docs.data.map((doc) => (
                 <tr key={doc.id} className="border-t border-grey-200 align-top">
@@ -277,7 +277,7 @@ function Documents({ d }: { d: ProviderFull }) {
           </table>
         )}
       </Card>
-      <ConfirmDialog open={!!review} onClose={() => setReview(null)} onConfirm={() => decide.mutate()} title={`${review?.decision === 'ACCEPTED' ? 'Accept' : 'Reject'} document`} message={`${review?.doc.fileName} — ${title(review?.doc.documentType)}. You cannot review documents you uploaded yourself.`} confirmLabel={review?.decision === 'ACCEPTED' ? 'Accept' : 'Reject'} loading={decide.isPending} danger={review?.decision === 'REJECTED'}>
+      <ConfirmDialog open={!!review} onClose={() => setReview(null)} onConfirm={() => decide.mutate()} title={`${review?.decision === 'ACCEPTED' ? 'Accept' : 'Reject'} Document`} message={`${review?.doc.fileName} — ${title(review?.doc.documentType)}. You cannot review documents you uploaded yourself.`} confirmLabel={review?.decision === 'ACCEPTED' ? 'Accept' : 'Reject'} loading={decide.isPending} danger={review?.decision === 'REJECTED'}>
         <Field label={review?.decision === 'REJECTED' ? 'Reason (required)' : 'Note'} className="mt-3"><Textarea value={note} onChange={(e) => setNote(e.target.value)} /></Field>
       </ConfirmDialog>
     </div>
@@ -295,18 +295,18 @@ function Services({ d }: { d: ProviderFull }) {
   return (
     <div className="space-y-4">
       {can('providers.update') && (
-        <Card title="Add or update a priced service">
+        <Card title="Add or Update a Priced Service">
           <div className="grid gap-3 md:grid-cols-4">
             <Field label="Service"><Select value={code} onChange={(e) => setCode(e.target.value)}><option value="">Choose…</option>{services.data?.map((s) => <option key={s.code} value={s.code}>{s.name}</option>)}</Select></Field>
             <Field label="Price (₹)"><Input type="number" min={0} step="0.01" value={price} onChange={(e) => setPrice(e.target.value)} /></Field>
-            <label className="mt-6 flex items-center gap-2 text-sm"><input type="checkbox" className="accent-black" checked={home} onChange={(e) => setHome(e.target.checked)} /> Home service available</label>
+            <label className="mt-6 flex items-center gap-2 text-sm"><input type="checkbox" className="accent-black" checked={home} onChange={(e) => setHome(e.target.checked)} /> Home Service Available</label>
             <Button className="mt-5" onClick={() => save.mutate()} loading={save.isPending} disabled={!code || !price}>Save</Button>
           </div>
         </Card>
       )}
-      <Card title="Offered services">
+      <Card title="Offered Services">
         {offerings.isPending ? <Skeleton /> : offerings.isError ? <ErrorState error={offerings.error} /> : offerings.data.length === 0 ? <p className="text-sm text-grey-500">No services configured.</p> : (
-          <table className="w-full text-sm"><thead className="text-left text-xs uppercase text-grey-500"><tr><th className="py-1">Service</th><th>Category</th><th>Price</th><th>Home</th><th>Active</th></tr></thead>
+          <table className="w-full text-sm"><thead className="text-left text-xs text-grey-500"><tr><th className="py-1">Service</th><th>Category</th><th>Price</th><th>Home</th><th>Active</th></tr></thead>
             <tbody>{offerings.data.map((o) => <tr key={o.id} className="border-t border-grey-200"><td className="py-1.5">{o.serviceName} <span className="text-xs text-grey-500">{o.serviceCode}</span></td><td>{title(o.category)}</td><td className="tnum">{money(o.priceMinor)}</td><td>{o.homeServiceAvailable ? 'Yes' : 'No'}</td><td>{o.isActive ? 'Yes' : 'No'}</td></tr>)}</tbody></table>
         )}
       </Card>
@@ -336,7 +336,7 @@ function Departments({ d }: { d: ProviderFull }) {
             </li>); })}
         </ul>
       </Card>
-      <Card title="Amenities & capabilities" actions={can('providers.update') && <Button size="sm" onClick={() => saveAmen.mutate()} loading={saveAmen.isPending}>Save</Button>}>
+      <Card title="Amenities & Capabilities" actions={can('providers.update') && <Button size="sm" onClick={() => saveAmen.mutate()} loading={saveAmen.isPending}>Save</Button>}>
         <ul className="grid grid-cols-1 gap-1 text-sm sm:grid-cols-2">
           {amenities.data?.map((a) => { const claim = d.amenities.find((x) => x.code === a.code); return (
             <li key={a.code} className="flex items-center justify-between gap-2">
@@ -361,15 +361,15 @@ function Payouts({ d }: { d: ProviderFull }) {
   const disable = useAction((id: string) => api.post(`/admin/providers/${d.id}/payout-accounts/${id}/disable`, { reason: 'Disabled from the admin console' }), { success: 'Account disabled', invalidate: inv });
   if (!can('providers.payout.read')) return <p className="text-sm text-grey-500">You do not have permission to view payout accounts.</p>;
   return (
-    <Card title="Payout bank accounts" actions={can('providers.payout.manage') && <Button size="sm" variant="secondary" onClick={() => setAdding(true)}>Add account</Button>}>
+    <Card title="Payout Bank Accounts" actions={can('providers.payout.manage') && <Button size="sm" variant="secondary" onClick={() => setAdding(true)}>Add Account</Button>}>
       {accounts.isPending ? <Skeleton /> : accounts.isError ? <ErrorState error={accounts.error} /> : accounts.data.length === 0 ? <p className="text-sm text-grey-500">No payout account. Settlements need one VERIFIED account.</p> : (
-        <table className="w-full text-sm"><thead className="text-left text-xs uppercase text-grey-500"><tr><th className="py-1">Holder</th><th>Account</th><th>IFSC</th><th>Status</th><th /></tr></thead>
+        <table className="w-full text-sm"><thead className="text-left text-xs text-grey-500"><tr><th className="py-1">Holder</th><th>Account</th><th>IFSC</th><th>Status</th><th /></tr></thead>
           <tbody>{accounts.data.map((a) => <tr key={a.id} className="border-t border-grey-200"><td className="py-1.5">{a.accountHolderName}</td><td className="font-mono">{a.accountNumberMasked}</td><td className="font-mono">{a.ifsc}</td><td><Badge>{a.status}</Badge></td><td className="text-right whitespace-nowrap">{can('providers.payout.verify') && a.status === 'PENDING_VERIFICATION' && <Button size="sm" variant="ghost" onClick={() => verify.mutate(a.id)}>Verify (penny drop)</Button>}{can('providers.payout.manage') && a.status !== 'DISABLED' && <Button size="sm" variant="ghost" onClick={() => disable.mutate(a.id)}>Disable</Button>}</td></tr>)}</tbody></table>
       )}
-      <Dialog open={adding} onClose={() => setAdding(false)} title="Add payout account" footer={<><Button variant="ghost" onClick={() => setAdding(false)}>Cancel</Button><Button onClick={() => add.mutate()} loading={add.isPending}>Add</Button></>}>
+      <Dialog open={adding} onClose={() => setAdding(false)} title="Add Payout Account" footer={<><Button variant="ghost" onClick={() => setAdding(false)}>Cancel</Button><Button onClick={() => add.mutate()} loading={add.isPending}>Add</Button></>}>
         <div className="space-y-3">
-          <Field label="Account holder name" required error={errors.accountHolderName}><Input value={form.accountHolderName} onChange={(e) => setForm({ ...form, accountHolderName: e.target.value })} /></Field>
-          <Field label="Account number" required error={errors.accountNumber} hint="Stored encrypted; only the last 4 digits are shown afterwards"><Input inputMode="numeric" value={form.accountNumber} onChange={(e) => setForm({ ...form, accountNumber: e.target.value.replace(/\D/g, '') })} /></Field>
+          <Field label="Account Holder Name" required error={errors.accountHolderName}><Input value={form.accountHolderName} onChange={(e) => setForm({ ...form, accountHolderName: e.target.value })} /></Field>
+          <Field label="Account Number" required error={errors.accountNumber} hint="Stored encrypted; only the last 4 digits are shown afterwards"><Input inputMode="numeric" value={form.accountNumber} onChange={(e) => setForm({ ...form, accountNumber: e.target.value.replace(/\D/g, '') })} /></Field>
           <Field label="IFSC" required error={errors.ifsc}><Input value={form.ifsc} onChange={(e) => setForm({ ...form, ifsc: e.target.value.toUpperCase() })} /></Field>
           <p className="text-xs text-grey-500">Verification must be done by a different user than the one adding the account.</p>
         </div>

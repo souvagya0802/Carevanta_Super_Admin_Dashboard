@@ -147,7 +147,7 @@ export default function UserDetailPage() {
         <Card title="Provider Memberships" className="lg:col-span-3">
           {u.providerMemberships.length === 0 ? <p className="text-sm text-grey-500">Not a member of any provider organisation.</p> : (
             <table className="w-full text-sm">
-              <thead className="text-left text-xs uppercase text-grey-500"><tr><th className="py-1">Provider</th><th>Type</th><th>Role</th><th>Status</th></tr></thead>
+              <thead className="text-left text-xs text-grey-500"><tr><th className="py-1">Provider</th><th>Type</th><th>Role</th><th>Status</th></tr></thead>
               <tbody>
                 {u.providerMemberships.map((m) => (
                   <tr key={m.providerId} className="border-t border-grey-200">
@@ -164,14 +164,14 @@ export default function UserDetailPage() {
             {activity.isPending ? <Skeleton rows={4} /> : activity.isError ? <ErrorState error={activity.error} /> : (
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
-                  <h3 className="mb-1 text-xs font-semibold uppercase text-grey-500">Audit Events</h3>
+                  <h3 className="mb-1 text-xs font-semibold text-grey-500">Audit Events</h3>
                   <ul className="divide-y divide-grey-200 text-xs">
-                    {activity.data.auditEvents.map((e) => <li key={e.id} className="flex justify-between gap-2 py-1"><span>{e.action} <span className="text-grey-500">{e.entityType}{e.entityId ? ` ${e.entityId.slice(0, 8)}` : ''}</span></span><span className="shrink-0 text-grey-500">{dateTime(e.occurredAt)}</span></li>)}
+                    {activity.data.auditEvents.map((e) => <li key={e.id} className="flex justify-between gap-2 py-1"><span>{e.action} <span className="text-grey-500">{title(e.entityType)}{e.entityId ? ` ${e.entityId.slice(0, 8)}` : ''}</span></span><span className="shrink-0 text-grey-500">{dateTime(e.occurredAt)}</span></li>)}
                     {!activity.data.auditEvents.length && <li className="py-1 text-grey-500">None</li>}
                   </ul>
                 </div>
                 <div>
-                  <h3 className="mb-1 text-xs font-semibold uppercase text-grey-500">Login Attempts</h3>
+                  <h3 className="mb-1 text-xs font-semibold text-grey-500">Login Attempts</h3>
                   <ul className="divide-y divide-grey-200 text-xs">
                     {activity.data.loginAttempts.map((a) => <li key={a.id} className="flex justify-between gap-2 py-1"><span>{a.success ? 'Success' : `Failed (${a.reason})`} <span className="text-grey-500">{a.ipAddress ?? ''}</span></span><span className="shrink-0 text-grey-500">{dateTime(a.createdAt)}</span></li>)}
                     {!activity.data.loginAttempts.length && <li className="py-1 text-grey-500">None</li>}

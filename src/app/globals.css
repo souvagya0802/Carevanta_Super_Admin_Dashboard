@@ -121,3 +121,12 @@ select:disabled,
 textarea:disabled {
   cursor: not-allowed;
 }
+
+/* Phones: tabs and disclosure toggles are at least 40px tall so they are easy
+   to tap (buttons get the same through the Button size classes). */
+@media (max-width: 639.98px) {
+  [role="tab"],
+  summary {
+    min-height: 40px;
+  }
+}

@@ -31,7 +31,7 @@ export function ProviderPicker({ value, onChange, placeholder = 'Search provider
       <div className={cx('flex h-10 items-center gap-2 rounded-lg border border-grey-300 bg-grey-50 px-3 text-sm', className)}>
         <Building2 size={14} className="shrink-0 text-grey-500" aria-hidden />
         <span className="min-w-0 flex-1 truncate"><span className="font-medium">{value.displayName}</span> <span className="text-xs text-grey-500">· {title(value.type)}</span></span>
-        {!disabled && <button type="button" onClick={() => { onChange(null); setQ(''); }} aria-label="Clear provider" className="text-grey-400 hover:text-ink"><X size={14} /></button>}
+        {!disabled && <button type="button" onClick={() => { onChange(null); setQ(''); }} aria-label="Clear Provider" className="text-grey-400 hover:text-ink"><X size={14} /></button>}
       </div>
     );
   }

@@ -33,11 +33,12 @@ export function logoSrc(b: Branding): string {
  * Logo box. Whatever image is uploaded is fitted inside a fixed-height box
  * with object-fit: contain, so any size or aspect ratio displays correctly.
  */
-export function Logo({ size = 'md', onDark = false, className }: { size?: 'sm' | 'md' | 'lg'; onDark?: boolean; className?: string }) {
+export function Logo({ size = 'md', onDark = false, className }: { size?: 'sm' | 'nav' | 'md' | 'lg'; onDark?: boolean; className?: string }) {
   const { branding } = useBranding();
-  const h = size === 'sm' ? 'h-8' : size === 'lg' ? 'h-24' : 'h-12';
+  // nav = phone top bars, where the logo is the main brand mark.
+  const h = size === 'sm' ? 'h-11' : size === 'nav' ? 'h-14' : size === 'lg' ? 'h-28' : 'h-16';
   return (
-    <div className={cx('flex items-center justify-center overflow-hidden rounded-md', onDark ? 'bg-paper p-1.5' : '', h, className)}>
+    <div className={cx('flex items-center justify-center overflow-hidden rounded-md', onDark ? 'bg-paper p-1' : '', h, className)}>
       {/* eslint-disable-next-line @next/next/no-img-element -- remote, operator-uploaded image of unknown dimensions */}
       <img src={logoSrc(branding)} alt={`${branding.name} logo`} className="h-full w-auto max-w-full object-contain" />
     </div>

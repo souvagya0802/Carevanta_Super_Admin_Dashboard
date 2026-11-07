@@ -58,14 +58,14 @@ export default function AppointmentsPage() {
         params={{ status: filters.status, doctorProviderId: filters.doctorProviderId, facilityProviderId: filters.facilityProviderId, from: filters.from ? new Date(filters.from).toISOString() : '', to: filters.to ? new Date(filters.to).toISOString() : '' }}
         columns={columns}
         onRowClick={setSelected}
-        emptyTitle="No appointments match"
+        emptyTitle="No Appointments Match"
         toolbar={
           <>
-            <Select aria-label="Status" value={filters.status} onChange={(e) => set('status', e.target.value)} className="w-56"><option value="">All statuses</option>{STATUSES.map((s) => <option key={s} value={s}>{title(s)}</option>)}</Select>
-            <Input aria-label="Doctor provider id" placeholder="Doctor provider id" value={filters.doctorProviderId} onChange={(e) => set('doctorProviderId', e.target.value.trim())} className="w-64" />
-            <Input aria-label="Facility provider id" placeholder="Facility provider id" value={filters.facilityProviderId} onChange={(e) => set('facilityProviderId', e.target.value.trim())} className="w-64" />
-            <Input type="date" aria-label="Created from" value={filters.from} onChange={(e) => set('from', e.target.value)} className="w-40" />
-            <Input type="date" aria-label="Created to" value={filters.to} onChange={(e) => set('to', e.target.value)} className="w-40" />
+            <Select aria-label="Status" value={filters.status} onChange={(e) => set('status', e.target.value)} className="w-56"><option value="">All Statuses</option>{STATUSES.map((s) => <option key={s} value={s}>{title(s)}</option>)}</Select>
+            <Input aria-label="Doctor Provider ID" placeholder="Doctor Provider ID" value={filters.doctorProviderId} onChange={(e) => set('doctorProviderId', e.target.value.trim())} className="w-64" />
+            <Input aria-label="Facility Provider ID" placeholder="Facility Provider ID" value={filters.facilityProviderId} onChange={(e) => set('facilityProviderId', e.target.value.trim())} className="w-64" />
+            <Input type="date" aria-label="Created From" value={filters.from} onChange={(e) => set('from', e.target.value)} className="w-40" />
+            <Input type="date" aria-label="Created To" value={filters.to} onChange={(e) => set('to', e.target.value)} className="w-40" />
           </>
         }
       />
@@ -82,22 +82,22 @@ export default function AppointmentsPage() {
             <DescriptionList items={[
               { label: 'Patient', value: `${selected.patient.fullName} (${selected.patient.relationship.toLowerCase()})` }, { label: 'Doctor', value: selected.doctor.displayName },
               { label: 'Facility', value: `${selected.facility.displayName} — ${selected.location.name}, ${selected.location.city}` }, { label: 'Slot', value: `${dateTime(selected.startsAt)} – ${dateTime(selected.endsAt).split(', ').pop()}` },
-              { label: 'Mode', value: title(selected.mode) }, { label: 'Source / attribution', value: `${title(selected.source)} · ${title(selected.attribution)}` },
+              { label: 'Mode', value: title(selected.mode) }, { label: 'Source / Attribution', value: `${title(selected.source)} · ${title(selected.attribution)}` },
               { label: 'Fee', value: money(selected.feeMinor) }, { label: 'Payment', value: selected.transaction ? <Link className="underline" href={`/payments?transactionId=${selected.transaction.id}`}>{selected.transaction.reference} · {title(selected.transaction.status)}{selected.transaction.commissionEligible ? ' · commissionable' : ''}</Link> : '—' },
-              { label: 'Confirmed', value: dateTime(selected.confirmedAt) }, { label: 'Checked in', value: dateTime(selected.checkedInAt) }, { label: 'Completed', value: dateTime(selected.completedAt) }, { label: 'Booked', value: dateTime(selected.createdAt) },
+              { label: 'Confirmed', value: dateTime(selected.confirmedAt) }, { label: 'Checked In', value: dateTime(selected.checkedInAt) }, { label: 'Completed', value: dateTime(selected.completedAt) }, { label: 'Booked', value: dateTime(selected.createdAt) },
             ]} />
             <div>
-              <h3 className="text-xs font-semibold uppercase text-grey-500">Timeline</h3>
+              <h3 className="text-xs font-semibold text-grey-500">Timeline</h3>
               <ul className="mt-1 divide-y divide-grey-200 text-xs">{events.data?.map((e, i) => <li key={i} className="flex justify-between gap-2 py-1"><span>{e.fromStatus ? `${title(e.fromStatus)} → ` : ''}{title(e.toStatus)} by {e.actorKind.toLowerCase()}{e.note ? ` — ${e.note}` : ''}</span><span className="shrink-0 text-grey-500">{dateTime(e.createdAt)}</span></li>)}</ul>
             </div>
           </div>
         )}
       </Dialog>
-      <ConfirmDialog open={!!action} onClose={() => setAction(null)} onConfirm={() => act.mutate()} title={`${title(action ?? '')} appointment`} message={action === 'CANCEL' || action === 'REJECT' ? 'The slot is released. If an online payment was captured, a refund request is created for finance approval.' : action === 'COMPLETE' ? 'Completion finalises the transaction and freezes the commission snapshot.' : 'This action is recorded in the appointment timeline.'} confirmLabel={title(action ?? '')} loading={act.isPending} danger={action === 'CANCEL' || action === 'REJECT'}>
+      <ConfirmDialog open={!!action} onClose={() => setAction(null)} onConfirm={() => act.mutate()} title={`${title(action ?? '')} Appointment`} message={action === 'CANCEL' || action === 'REJECT' ? 'The slot is released. If an online payment was captured, a refund request is created for finance approval.' : action === 'COMPLETE' ? 'Completion finalises the transaction and freezes the commission snapshot.' : 'This action is recorded in the appointment timeline.'} confirmLabel={title(action ?? '')} loading={act.isPending} danger={action === 'CANCEL' || action === 'REJECT'}>
         <Field label={action === 'CANCEL' || action === 'REJECT' ? 'Reason (required)' : 'Note'} className="mt-3"><Textarea value={reason} onChange={(e) => setReason(e.target.value)} /></Field>
       </ConfirmDialog>
       <Dialog open={reschedule} onClose={() => setReschedule(false)} title="Reschedule" footer={<><Button variant="ghost" onClick={() => setReschedule(false)}>Cancel</Button><Button onClick={() => move.mutate()} loading={move.isPending} disabled={!newSlotId}>Move</Button></>}>
-        <Field label="New slot id" hint="Must be an open slot with the same doctor and fee; find ids under the doctor's schedule"><Input value={newSlotId} onChange={(e) => setNewSlotId(e.target.value.trim())} /></Field>
+        <Field label="New Slot ID" hint="Must be an open slot with the same doctor and fee; find ids under the doctor's schedule"><Input value={newSlotId} onChange={(e) => setNewSlotId(e.target.value.trim())} /></Field>
       </Dialog>
     </RequirePermission>
   );

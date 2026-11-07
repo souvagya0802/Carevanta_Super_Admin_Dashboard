@@ -2,6 +2,7 @@
 
 import { clsx } from 'clsx';
 import { Eye, EyeOff, Loader2, X, type LucideIcon } from 'lucide-react';
+import { money, moneyCompact, title } from '@/lib/format';
 import { forwardRef, useEffect, useId, useRef, useState, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes, type TextareaHTMLAttributes } from 'react';
 
 export const cx = clsx;
@@ -39,7 +40,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       type={rest.type ?? 'button'}
       disabled={disabled || loading}
       aria-busy={loading || undefined}
-      className={cx('inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-colors disabled:cursor-not-allowed', size === 'sm' ? 'h-8 px-3 text-xs' : 'h-10 px-4 text-sm', variants[variant], className)}
+      className={cx('inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-colors disabled:cursor-not-allowed [&_svg]:shrink-0', size === 'sm' ? 'h-10 min-w-10 px-3 text-xs sm:h-8 sm:min-w-0' : 'h-10 px-4 text-sm', variants[variant], className)}
       {...rest}
     >
       {loading && <Loader2 size={14} className="animate-spin" aria-hidden />}
@@ -68,7 +69,7 @@ export const PasswordInput = forwardRef<HTMLInputElement, Omit<InputHTMLAttribut
   return (
     <div className="relative">
       <input ref={ref} type={visible ? 'text' : 'password'} className={controlClass(className, 'pr-10')} {...rest} />
-      <button type="button" onClick={() => setVisible((v) => !v)} aria-label={visible ? 'Hide password' : 'Show password'} aria-pressed={visible} tabIndex={-1} className="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-grey-500 hover:text-ink">
+      <button type="button" onClick={() => setVisible((v) => !v)} aria-label={visible ? 'Hide Password' : 'Show Password'} aria-pressed={visible} tabIndex={-1} className="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-grey-500 hover:text-ink">
         {visible ? <EyeOff size={16} aria-hidden /> : <Eye size={16} aria-hidden />}
       </button>
     </div>
@@ -130,7 +131,12 @@ export function Badge({ children, tone, accent }: { children: ReactNode; tone?: 
   const key = typeof children === 'string' ? children : (tone ?? '');
   const a = accent ?? badgeAccent(key);
   const cls = a === 'ink' ? 'bg-grey-100 text-grey-700' : `${ACCENT[a].soft} ${ACCENT[a].text}`;
-  return <span className={cx('inline-flex items-center whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide', cls)}>{typeof children === 'string' ? children.replace(/_/g, ' ') : children}</span>;
+  return <span className={cx('inline-flex items-center whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-semibold', cls)}>{typeof children === 'string' ? title(children) : children}</span>;
+}
+
+/** Compact rupees for tiles (₹25.07L, ₹1.72Cr) with the exact amount in a tooltip, so large values never get cut off. */
+export function CompactMoney({ minor }: { minor: number | null | undefined }) {
+  return <span title={money(minor)}>{moneyCompact(minor)}</span>;
 }
 
 /* ─── Surfaces ────────────────────────────────────────────────────────────── */
@@ -220,9 +226,9 @@ export function ErrorState({ error, retry }: { error: unknown; retry?: () => voi
   const message = error instanceof Error ? error.message : 'Something went wrong';
   return (
     <div role="alert" className="rounded-2xl border border-red/30 bg-red-soft px-6 py-8 text-center">
-      <p className="font-medium text-red">Could not load this view</p>
+      <p className="font-medium text-red">Could Not Load This View</p>
       <p className="mt-1 text-sm text-grey-700">{message}</p>
-      {retry && <Button variant="secondary" size="sm" className="mt-4" onClick={retry}>Try again</Button>}
+      {retry && <Button variant="secondary" size="sm" className="mt-4" onClick={retry}>Try Again</Button>}
     </div>
   );
 }
@@ -232,7 +238,7 @@ export function DescriptionList({ items }: { items: { label: string; value: Reac
     <dl className="grid grid-cols-1 gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
       {items.map((i) => (
         <div key={i.label} className="min-w-0">
-          <dt className="text-xs uppercase tracking-wide text-grey-500">{i.label}</dt>
+          <dt className="text-xs text-grey-500">{i.label}</dt>
           <dd className="mt-0.5 break-words">{i.value ?? '—'}</dd>
         </div>
       ))}
@@ -275,7 +281,7 @@ export function Dialog({ open, onClose, title, description, icon: Icon, children
                 {description && <p className="mt-0.5 truncate text-xs text-grey-400">{description}</p>}
               </div>
             </div>
-            <button type="button" onClick={onClose} aria-label="Close" className="-mr-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-grey-400 hover:bg-white/10 hover:text-paper"><X size={16} aria-hidden /></button>
+            <button type="button" onClick={onClose} aria-label="Close" className="-mr-2 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-grey-400 hover:bg-white/10 hover:text-paper sm:h-8 sm:w-8"><X size={16} aria-hidden /></button>
           </header>
           <div className={cx('flex-1 overflow-y-auto px-6 py-5 text-sm', sz === 'full' && 'bg-canvas')}>{children}</div>
           {footer && <div className="flex shrink-0 flex-wrap items-center justify-end gap-2 border-t border-grey-200 bg-paper px-6 py-4">{footer}</div>}
@@ -334,7 +340,7 @@ export function Tabs({ tabs, active, onChange }: { tabs: { key: string; label: s
   return (
     <div role="tablist" className="inline-flex max-w-full flex-wrap gap-1 rounded-xl bg-grey-100 p-1">
       {tabs.map((t) => (
-        <button key={t.key} role="tab" aria-selected={active === t.key} onClick={() => onChange(t.key)} className={cx('rounded-lg px-3 py-1.5 text-sm transition-colors', active === t.key ? 'bg-paper font-medium shadow-sm' : 'text-grey-600 hover:text-ink')}>
+        <button key={t.key} role="tab" aria-selected={active === t.key} onClick={() => onChange(t.key)} className={cx('min-h-10 rounded-lg px-3 py-1.5 text-sm transition-colors sm:min-h-0', active === t.key ? 'bg-paper font-medium shadow-sm' : 'text-grey-600 hover:text-ink')}>
           {t.label}
           {t.count != null && <span className="ml-1 text-xs text-grey-500">({t.count})</span>}
         </button>

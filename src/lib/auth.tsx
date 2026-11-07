@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { api, session } from './api';
+import { ApiError, api, session } from './api';
 
 export interface Me {
   id: string;
@@ -30,11 +30,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const fetchMe = useCallback(async (): Promise<Me | null> => {
-    if (!session.accessToken && !session.hasRefreshToken()) return null;
-    try {
-      return (await api.get<{ data: Me }>('/auth/me')).data;
-    } catch {
-      return null;
+    // A throttled or briefly unavailable API keeps the session (see refresh() in api.ts): retry a
+    // couple of times before giving up, instead of treating it as signed out.
+    for (let attempt = 0; ; attempt++) {
+      if (!session.accessToken && !session.hasRefreshToken()) return null;
+      try {
+        return (await api.get<{ data: Me }>('/auth/me')).data;
+      } catch (err) {
+        const transient = !(err instanceof ApiError) || err.status === 429 || err.status >= 500 || (err.status === 401 && session.hasRefreshToken());
+        if (!transient || attempt >= 2) return null;
+        await new Promise((r) => setTimeout(r, 1500 * (attempt + 1)));
+      }
     }
   }, []);
   const reload = useCallback(async () => {

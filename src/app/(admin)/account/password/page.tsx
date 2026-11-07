@@ -20,14 +20,14 @@ export default function PasswordPage() {
   const mismatch = f.confirm && f.confirm !== f.newPassword;
   return (
     <div className="mx-auto max-w-md">
-      <PageHeader title="Change password" description={me?.mustChangePassword ? 'You must set a new password before continuing.' : 'Choose a passphrase of at least 12 characters.'} />
+      <PageHeader title="Change Password" description={me?.mustChangePassword ? 'You must set a new password before continuing.' : 'Choose a passphrase of at least 12 characters.'} />
       <Card>
         <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); setError(null); change.mutate(); }} noValidate>
-          <Field label="Current password" required><PasswordInput autoComplete="current-password" value={f.currentPassword} onChange={(e) => setF({ ...f, currentPassword: e.target.value })} /></Field>
-          <Field label="New password" required hint="12–128 characters; avoid common passwords"><PasswordInput autoComplete="new-password" value={f.newPassword} onChange={(e) => setF({ ...f, newPassword: e.target.value })} /></Field>
-          <Field label="Confirm new password" required error={mismatch ? 'Passwords do not match' : undefined}><PasswordInput autoComplete="new-password" value={f.confirm} onChange={(e) => setF({ ...f, confirm: e.target.value })} aria-invalid={!!mismatch} /></Field>
+          <Field label="Current Password" required><PasswordInput autoComplete="current-password" value={f.currentPassword} onChange={(e) => setF({ ...f, currentPassword: e.target.value })} /></Field>
+          <Field label="New Password" required hint="12–128 characters; avoid common passwords"><PasswordInput autoComplete="new-password" value={f.newPassword} onChange={(e) => setF({ ...f, newPassword: e.target.value })} /></Field>
+          <Field label="Confirm New Password" required error={mismatch ? 'Passwords do not match' : undefined}><PasswordInput autoComplete="new-password" value={f.confirm} onChange={(e) => setF({ ...f, confirm: e.target.value })} aria-invalid={!!mismatch} /></Field>
           {error && <p role="alert" className="border border-ink px-3 py-2 text-sm">{error}</p>}
-          <Button type="submit" loading={change.isPending} disabled={!f.currentPassword || f.newPassword.length < 12 || !!mismatch || f.confirm !== f.newPassword}>Change password</Button>
+          <Button type="submit" loading={change.isPending} disabled={!f.currentPassword || f.newPassword.length < 12 || !!mismatch || f.confirm !== f.newPassword}>Change Password</Button>
         </form>
       </Card>
     </div>

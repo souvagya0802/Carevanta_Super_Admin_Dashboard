@@ -49,7 +49,7 @@ export default function LoginPage() {
         <h1 className="text-center text-lg font-semibold">{branding.name} Admin</h1>
         <p className="mt-1 text-center text-sm text-grey-600">{branding.tagline || 'Sign in with your platform account.'}</p>
         <form onSubmit={onSubmit} className="mt-6 space-y-4" noValidate>
-          <Field label="Email or mobile" error={form.formState.errors.identifier?.message} required>
+          <Field label="Email or Mobile" error={form.formState.errors.identifier?.message} required>
             <Input autoComplete="username" autoFocus aria-invalid={!!form.formState.errors.identifier} {...form.register('identifier')} />
           </Field>
           <Field label="Password" error={form.formState.errors.password?.message} required>
@@ -61,7 +61,7 @@ export default function LoginPage() {
             </p>
           )}
           <Button type="submit" className="w-full" loading={form.formState.isSubmitting}>
-            Sign in
+            Sign In
           </Button>
         </form>
         <p className="mt-6 text-xs text-grey-500">Access is limited to authorised {branding.name} staff. All actions are logged.</p>

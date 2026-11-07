@@ -1,5 +1,5 @@
 import {
-  Activity, Ambulance, BadgeCheck, BarChart3, Bell, Building2, CalendarCheck, ClipboardList, CreditCard, FileSearch, FlaskConical, HeartPulse, Hospital, LayoutDashboard, Link2, ListTree, MessageSquareWarning, Percent, Pill, ScanLine, Settings, ShieldCheck, Stethoscope, Users, Wallet, type LucideIcon,
+  Activity, Ambulance, BadgeCheck, BarChart3, Bell, Building2, CalendarCheck, ClipboardList, CreditCard, FileSearch, FlaskConical, HeartPulse, Hospital, LayoutDashboard, Link2, ListTree, MessageSquareWarning, Percent, Pill, ScanLine, Settings, ShieldCheck, Star, Stethoscope, Users, Wallet, type LucideIcon,
 } from 'lucide-react';
 
 export interface NavItem {
@@ -34,6 +34,7 @@ export const NAV: NavItem[] = [
   { href: '/commission-rules', label: 'Commission Rules', icon: Percent, permissions: ['finance.read'], group: 'Finance' },
   { href: '/settlements', label: 'Provider Settlements', icon: Wallet, permissions: ['finance.read'], group: 'Finance' },
   { href: '/support', label: 'Complaints & Disputes', icon: MessageSquareWarning, permissions: ['support.read'], group: 'Service' },
+  { href: '/reviews', label: 'Patient Reviews', icon: Star, permissions: ['reviews.read', 'reviews.moderate'], group: 'Service' },
   { href: '/notifications', label: 'Notifications', icon: Bell, permissions: ['notifications.read'], group: 'Service' },
   { href: '/reports', label: 'Reports & Exports', icon: BarChart3, permissions: ['analytics.read', 'exports.read'], group: 'Service' },
   { href: '/audit', label: 'Audit Logs', icon: FileSearch, permissions: ['audit.read'], group: 'Governance' },

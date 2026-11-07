@@ -5,10 +5,10 @@ export const PROVIDER_SLUGS: Record<string, { type: ProviderType; title: string;
   doctors: { type: 'DOCTOR', title: 'Doctors', singular: 'Doctor', description: 'Individual practitioners. One identity per doctor, linked to facilities through affiliations.' },
   hospitals: { type: 'HOSPITAL', title: 'Hospitals', singular: 'Hospital', description: 'Multi-department facilities with inpatient capacity.' },
   clinics: { type: 'CLINIC', title: 'Clinics', singular: 'Clinic', description: 'Outpatient facilities and polyclinics.' },
-  labs: { type: 'DIAGNOSTIC_LAB', title: 'Diagnostic laboratories', singular: 'Diagnostic lab', description: 'Pathology laboratories and sample-collection services.' },
-  imaging: { type: 'IMAGING_CENTRE', title: 'Imaging centres', singular: 'Imaging centre', description: 'X-ray, ultrasound, CT and MRI providers.' },
+  labs: { type: 'DIAGNOSTIC_LAB', title: 'Diagnostic Laboratories', singular: 'Diagnostic Lab', description: 'Pathology laboratories and sample-collection services.' },
+  imaging: { type: 'IMAGING_CENTRE', title: 'Imaging Centres', singular: 'Imaging Centre', description: 'X-ray, ultrasound, CT and MRI providers.' },
   pharmacies: { type: 'PHARMACY', title: 'Pharmacies', singular: 'Pharmacy', description: 'Licensed retail pharmacies.' },
-  ambulance: { type: 'AMBULANCE_OPERATOR', title: 'Ambulance operators', singular: 'Ambulance operator', description: 'Operators with verified vehicles and crew.' },
+  ambulance: { type: 'AMBULANCE_OPERATOR', title: 'Ambulance Operators', singular: 'Ambulance Operator', description: 'Operators with verified vehicles and crew.' },
 };
 
 export const slugForType = (t: string) => Object.entries(PROVIDER_SLUGS).find(([, m]) => m.type === t)?.[0] ?? 'hospitals';

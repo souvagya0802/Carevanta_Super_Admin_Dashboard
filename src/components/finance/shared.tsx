@@ -6,7 +6,7 @@ import { Download, type LucideIcon } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { useAction, useGet } from '@/lib/hooks';
-import { money } from '@/lib/format';
+import { money, title } from '@/lib/format';
 import { Button, IconTile, cx, type Accent } from '@/components/ui/primitives';
 
 /* ─── Money / basis-point helpers (mirror the API's integer arithmetic) ──── */
@@ -75,8 +75,8 @@ export function Kpi({ icon, accent, label, value, sub, loading, href }: { icon: 
       <IconTile icon={icon} accent={accent} size="sm" />
       <div className="min-w-0">
         {loading ? <div className="h-6 w-20 animate-pulse rounded bg-grey-100" /> : <p className="tnum truncate text-lg font-bold leading-tight">{value}</p>}
-        <p className="truncate text-[11px] text-grey-500">{label}</p>
-        {sub && <p className="truncate text-[11px] text-grey-600">{sub}</p>}
+        <p className="break-words text-[11px] leading-snug text-grey-500">{label}</p>
+        {sub && <p className="break-words text-[11px] leading-snug text-grey-600">{sub}</p>}
       </div>
     </div>
   );
@@ -91,11 +91,11 @@ export function Lifecycle({ steps, current, terminal }: { steps: readonly string
     <ol className="flex flex-wrap items-center gap-2 text-xs" aria-label="Lifecycle">
       {steps.map((s, n) => (
         <li key={s} className="flex items-center gap-2">
-          <span className={cx('rounded-full px-2.5 py-1 font-medium', !isTerminal && n < idx ? 'bg-green-soft text-green' : !isTerminal && n === idx ? 'bg-ink text-paper' : 'bg-grey-100 text-grey-500')}>{s.replace(/_/g, ' ').toLowerCase().replace(/^./, (c) => c.toUpperCase())}</span>
+          <span className={cx('rounded-full px-2.5 py-1 font-medium', !isTerminal && n < idx ? 'bg-green-soft text-green' : !isTerminal && n === idx ? 'bg-ink text-paper' : 'bg-grey-100 text-grey-500')}>{title(s).replace(/^./, (c) => c.toUpperCase())}</span>
           {n < steps.length - 1 && <span className={cx('h-px w-4', !isTerminal && n < idx ? 'bg-green' : 'bg-grey-300')} />}
         </li>
       ))}
-      {isTerminal && <li><span className={cx('rounded-full px-2.5 py-1 font-medium', terminal.accent === 'green' ? 'bg-green-soft text-green' : 'bg-red-soft text-red')}>{terminal.label ?? terminal.status.replace(/_/g, ' ').toLowerCase()}</span></li>}
+      {isTerminal && <li><span className={cx('rounded-full px-2.5 py-1 font-medium', terminal.accent === 'green' ? 'bg-green-soft text-green' : 'bg-red-soft text-red')}>{terminal.label ?? title(terminal.status)}</span></li>}
     </ol>
   );
 }
@@ -106,7 +106,7 @@ export function ExportButton({ type, filters, label = 'Export CSV' }: { type: 't
   const [done, setDone] = useState(false);
   const run = useAction(() => api.post<{ data: { id: string } }>('/admin/exports', { exportType: type, filters: Object.fromEntries(Object.entries(filters ?? {}).filter(([, v]) => v)) }), { success: 'Export queued — download it from Reports & Exports when it finishes', onSuccess: () => setDone(true) });
   if (!can('exports.create')) return null;
-  return done ? <Link href="/reports"><Button size="sm" variant="secondary"><Download size={14} /> Open exports</Button></Link> : <Button size="sm" variant="secondary" onClick={() => run.mutate()} loading={run.isPending}><Download size={14} /> {label}</Button>;
+  return done ? <Link href="/reports"><Button size="sm" variant="secondary"><Download size={14} /> Open Exports</Button></Link> : <Button size="sm" variant="secondary" onClick={() => run.mutate()} loading={run.isPending}><Download size={14} /> {label}</Button>;
 }
 
 /** Two-column amount row used in breakdowns. */
@@ -123,12 +123,12 @@ export const shortId = (id: string | null | undefined) => (id ? id.slice(0, 8) :
 
 /* ─── "Where does the money come from?" explainer ───────────────────────── */
 const FLOW_STEPS: { title: string; body: string; accent: Accent }[] = [
-  { title: '1 · Patient pays', body: 'Online through the gateway (captured only after the signed webhook) or at the provider’s counter.', accent: 'blue' },
-  { title: '2 · Service completed', body: 'The appointment, order or trip is marked completed. Only completed, platform-attributed transactions earn commission.', accent: 'teal' },
-  { title: '3 · Commission frozen', body: 'The active policy is resolved and a snapshot is stored — later policy changes never alter it.', accent: 'purple' },
-  { title: '4 · Ledger posted', body: '+ service earning, − commission, − tax are appended to the provider’s ledger. That sum is the payable balance.', accent: 'green' },
-  { title: '5 · Hold period', body: 'Entries wait the configured number of days so refunds and disputes can claw back before money moves.', accent: 'orange' },
-  { title: '6 · Batch & payout', body: 'One user prepares a batch, another approves it, and each bank transfer is recorded with its UTR.', accent: 'ink' },
+  { title: '1 · Patient Pays', body: 'Online through the gateway (captured only after the signed webhook) or at the provider’s counter.', accent: 'blue' },
+  { title: '2 · Service Completed', body: 'The appointment, order or trip is marked completed. Only completed, platform-attributed transactions earn commission.', accent: 'teal' },
+  { title: '3 · Commission Frozen', body: 'The active policy is resolved and a snapshot is stored — later policy changes never alter it.', accent: 'purple' },
+  { title: '4 · Ledger Posted', body: '+ service earning, − commission, − tax are appended to the provider’s ledger. That sum is the payable balance.', accent: 'green' },
+  { title: '5 · Hold Period', body: 'Entries wait the configured number of days so refunds and disputes can claw back before money moves.', accent: 'orange' },
+  { title: '6 · Batch & Payout', body: 'One user prepares a batch, another approves it, and each bank transfer is recorded with its UTR.', accent: 'ink' },
 ];
 
 /** Compact pipeline strip explaining how a payable balance arises; shows the live hold period when readable. */
@@ -140,7 +140,7 @@ export function MoneyFlow({ className }: { className?: string }) {
   return (
     <section className={cx('rounded-2xl border border-grey-200 bg-paper shadow-[var(--shadow-card)]', className)}>
       <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} className="flex w-full items-center justify-between gap-3 px-5 py-3 text-left">
-        <span className="text-sm font-semibold">How a payable balance is created</span>
+        <span className="text-sm font-semibold">How a Payable Balance Is Created</span>
         <span className="text-xs text-grey-500">{typeof hold === 'number' ? `Hold period: ${hold} day${hold === 1 ? '' : 's'} · ` : ''}{open ? 'Hide' : 'Show'}</span>
       </button>
       {open && (

@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { Map as LeafletMap, Marker } from 'leaflet';
 import { Crosshair, Loader2, Search } from 'lucide-react';
 import { Button, Input, cx } from '@/components/ui/primitives';
+import { api } from '@/lib/api';
 
 export interface GeoPoint { lat: number; lng: number }
 /** Address parts as the geocoder understood them — editable by the user afterwards. */
@@ -21,47 +22,58 @@ interface Props {
 }
 
 const INDIA: GeoPoint = { lat: 22.9734, lng: 78.6569 };
-const NOMINATIM = 'https://nominatim.openstreetmap.org';
+/** Map tiles: OpenStreetMap unless NEXT_PUBLIC_MAP_TILE_URL points at another (keyed) tile server. */
+const TILES = {
+  url: process.env.NEXT_PUBLIC_MAP_TILE_URL || 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+  attribution: process.env.NEXT_PUBLIC_MAP_ATTRIBUTION || '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+};
 
-interface NominatimResult { lat: string; lon: string; display_name: string; address?: Record<string, string> }
+/** A place as our API returns it (/public/geo/search and /public/geo/reverse). */
+interface GeoPlace { label: string; latitude: number; longitude: number; address: { addressLine1: string | null; locality: string | null; city: string | null; district: string | null; state: string | null; pincode: string | null } }
 
-/** Map OpenStreetMap address tags onto the Indian postal shape the API stores. */
-function toAddress(r: NominatimResult): GeocodedAddress {
-  const a = r.address ?? {};
-  const line = [a.house_number, a.building, a.road ?? a.pedestrian ?? a.footway, a.neighbourhood && !a.suburb ? a.neighbourhood : undefined].filter(Boolean).join(', ');
+/** The API's address in the editable shape the location form uses. */
+function toAddress(p: GeoPlace): GeocodedAddress {
+  const a = p.address;
   return {
-    addressLine1: line || r.display_name.split(',').slice(0, 2).join(',').trim(),
-    locality: a.suburb ?? a.neighbourhood ?? a.hamlet ?? a.quarter ?? '',
-    city: a.city ?? a.town ?? a.village ?? a.municipality ?? a.city_district ?? '',
-    district: (a.state_district ?? a.county ?? '').replace(/\s+district$/i, ''),
+    addressLine1: a.addressLine1 || p.label.split(',').slice(0, 2).join(',').trim(),
+    locality: a.locality ?? '',
+    city: a.city ?? '',
+    district: a.district ?? '',
     state: a.state ?? '',
-    pincode: (a.postcode ?? '').replace(/\D/g, '').slice(0, 6),
-    label: r.display_name,
+    pincode: a.pincode ?? '',
+    label: p.label,
   };
 }
 
+/**
+ * Lookups go through our API, which picks the geocoder (free OpenStreetMap
+ * Nominatim by default, or a keyed provider set in the API's .env) and caches
+ * answers, so no key ever reaches the browser.
+ */
 async function reverseGeocode(p: GeoPoint): Promise<GeocodedAddress | null> {
   try {
-    const res = await fetch(`${NOMINATIM}/reverse?lat=${p.lat}&lon=${p.lng}&format=jsonv2&addressdetails=1&zoom=18&accept-language=en`, { headers: { accept: 'application/json' } });
-    if (!res.ok) return null;
-    const json = (await res.json()) as NominatimResult & { error?: string };
-    return json.error ? null : toAddress(json);
+    const { data } = await api.get<{ data: GeoPlace | null }>(`/public/geo/reverse?lat=${p.lat}&lng=${p.lng}`);
+    return data ? toAddress(data) : null;
   } catch {
     return null;
   }
 }
 
-async function searchPlaces(q: string): Promise<NominatimResult[]> {
-  const res = await fetch(`${NOMINATIM}/search?q=${encodeURIComponent(q)}&format=jsonv2&addressdetails=1&limit=6&countrycodes=in&accept-language=en`, { headers: { accept: 'application/json' } });
-  if (!res.ok) throw new Error('Place search is unavailable right now');
-  return (await res.json()) as NominatimResult[];
+async function searchPlaces(q: string, near: GeoPoint | null): Promise<GeoPlace[]> {
+  const bias = near ? `&lat=${near.lat}&lng=${near.lng}` : '';
+  try {
+    const { data } = await api.get<{ data: GeoPlace[] }>(`/public/geo/search?q=${encodeURIComponent(q)}&limit=6${bias}`);
+    return data;
+  } catch {
+    throw new Error('Place search is unavailable right now. Click the spot on the map instead.');
+  }
 }
 
 /**
  * Click-to-place map (OpenStreetMap tiles, Leaflet). Dropping or dragging the
  * pin reverse-geocodes the spot so the address fields fill in; the search box
- * finds a place by name or address. No API key is needed; usage stays within
- * OSM's fair-use policy because lookups happen only on explicit user actions.
+ * finds a place by name or address. Lookups go through our API (see
+ * reverseGeocode) and happen only on explicit user actions.
  */
 export function MapPicker({ value, onChange, defaultCenter = INDIA, defaultZoom = 5, className }: Props) {
   const host = useRef<HTMLDivElement>(null);
@@ -73,7 +85,7 @@ export function MapPicker({ value, onChange, defaultCenter = INDIA, defaultZoom 
   const [ready, setReady] = useState(false);
   const [busy, setBusy] = useState<'reverse' | 'search' | 'locate' | null>(null);
   const [q, setQ] = useState('');
-  const [results, setResults] = useState<NominatimResult[]>([]);
+  const [results, setResults] = useState<GeoPlace[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   // Create the map once; Leaflet touches `window`, so it is imported lazily on the client.
@@ -84,7 +96,7 @@ export function MapPicker({ value, onChange, defaultCenter = INDIA, defaultZoom 
       if (disposed || !host.current || map.current) return;
       leaflet.current = L;
       const m = L.map(host.current, { zoomControl: true, attributionControl: true });
-      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' }).addTo(m);
+      L.tileLayer(TILES.url, { maxZoom: 19, attribution: TILES.attribution }).addTo(m);
       if (value) m.setView([value.lat, value.lng], 16);
       else m.setView([defaultCenter.lat, defaultCenter.lng], defaultZoom);
       m.on('click', (e) => void place({ lat: e.latlng.lat, lng: e.latlng.lng }, true));
@@ -148,7 +160,7 @@ export function MapPicker({ value, onChange, defaultCenter = INDIA, defaultZoom 
     setBusy('search');
     setError(null);
     try {
-      const found = await searchPlaces(term);
+      const found = await searchPlaces(term, value);
       setResults(found);
       if (!found.length) setError('No places found. Try a landmark, locality or PIN code.');
     } catch (e) {
@@ -158,8 +170,8 @@ export function MapPicker({ value, onChange, defaultCenter = INDIA, defaultZoom 
     }
   }
 
-  function pick(r: NominatimResult) {
-    const point = { lat: Number(Number(r.lat).toFixed(6)), lng: Number(Number(r.lon).toFixed(6)) };
+  function pick(r: GeoPlace) {
+    const point = { lat: Number(r.latitude.toFixed(6)), lng: Number(r.longitude.toFixed(6)) };
     setResults([]);
     setQ('');
     putMarker(point);
@@ -182,19 +194,19 @@ export function MapPicker({ value, onChange, defaultCenter = INDIA, defaultZoom 
       <div className="flex gap-2">
         <div className="relative flex-1">
           <Search size={14} aria-hidden className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-grey-400" />
-          <Input aria-label="Search a place or address" placeholder="Search hospital, clinic, landmark, locality or PIN…" value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); void search(); } }} className="pl-9" />
+          <Input aria-label="Search a Place or Address" placeholder="Search hospital, clinic, landmark, locality or PIN…" value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); void search(); } }} className="pl-9" />
           {results.length > 0 && (
             <ul role="listbox" className="absolute inset-x-0 top-full z-[1000] mt-1 max-h-56 overflow-y-auto rounded-lg border border-grey-200 bg-paper py-1 text-sm shadow-[var(--shadow-float)]">
               {results.map((r, i) => (
-                <li key={`${r.lat}-${r.lon}-${i}`}>
-                  <button type="button" role="option" aria-selected={false} onClick={() => pick(r)} className="block w-full px-3 py-2 text-left hover:bg-grey-50">{r.display_name}</button>
+                <li key={`${r.latitude}-${r.longitude}-${i}`}>
+                  <button type="button" role="option" aria-selected={false} onClick={() => pick(r)} className="block w-full px-3 py-2 text-left hover:bg-grey-50">{r.label}</button>
                 </li>
               ))}
             </ul>
           )}
         </div>
         <Button type="button" variant="secondary" onClick={() => void search()} loading={busy === 'search'} aria-label="Search">Search</Button>
-        <Button type="button" variant="secondary" onClick={locate} loading={busy === 'locate'} aria-label="Use my location" title="Use my location" className="px-3"><Crosshair size={16} /></Button>
+        <Button type="button" variant="secondary" onClick={locate} loading={busy === 'locate'} aria-label="Use My Location" title="Use My Location" className="px-3"><Crosshair size={16} /></Button>
       </div>
       <div className="relative overflow-hidden rounded-lg border border-grey-200">
         <div ref={host} className="h-72 w-full bg-grey-100" role="application" aria-label="Map. Click to place the pin, drag to adjust." />

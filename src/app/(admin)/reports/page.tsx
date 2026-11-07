@@ -144,7 +144,7 @@ function AnalyticsTab({ onExport, canExport }: { onExport: (p: { exportType: str
         <div className="flex flex-wrap items-center gap-2">
           <Select aria-label="Metric" value={metric} onChange={(e) => setMetric(e.target.value)} className="h-8 w-52 text-xs">{METRICS.map((x) => <option key={x.key} value={x.key}>{x.label}</option>)}</Select>
           <Select aria-label="Granularity" value={granularity} onChange={(e) => setGranularityOverride(e.target.value as 'day' | 'week' | 'month')} className="h-8 w-28 text-xs"><option value="day">Daily</option><option value="week">Weekly</option><option value="month">Monthly</option></Select>
-          <Select aria-label="Preset range" value={PRESETS.find((p) => toDateInput(new Date(nowMs() - p.days * DAY)) === range.from && range.to === today())?.days ?? 'custom'} onChange={(e) => { if (e.target.value !== 'custom') applyPreset(Number(e.target.value)); }} className="h-8 w-36 text-xs">{PRESETS.map((p) => <option key={p.days} value={p.days}>{p.label}</option>)}<option value="custom">Custom</option></Select>
+          <Select aria-label="Preset Range" value={PRESETS.find((p) => toDateInput(new Date(nowMs() - p.days * DAY)) === range.from && range.to === today())?.days ?? 'custom'} onChange={(e) => { if (e.target.value !== 'custom') applyPreset(Number(e.target.value)); }} className="h-8 w-36 text-xs">{PRESETS.map((p) => <option key={p.days} value={p.days}>{p.label}</option>)}<option value="custom">Custom</option></Select>
           <Input type="date" aria-label="From" value={range.from} max={range.to} onChange={(e) => { setRange({ ...range, from: e.target.value }); setGranularityOverride(null); }} className="h-8 w-36 text-xs" />
           <span className="text-xs text-grey-500">to</span>
           <Input type="date" aria-label="To" value={range.to} min={range.from} max={today()} onChange={(e) => { setRange({ ...range, to: e.target.value }); setGranularityOverride(null); }} className="h-8 w-36 text-xs" />
@@ -174,9 +174,9 @@ function AnalyticsTab({ onExport, canExport }: { onExport: (p: { exportType: str
       <div className="grid gap-4 lg:grid-cols-3">
         <Card title="Approved Providers by District" description="Active locations of approved providers" className="lg:col-span-2">
           {geo.isPending ? <Skeleton rows={3} /> : geo.isError ? <ErrorState error={geo.error} retry={() => geo.refetch()} /> : providersByDistrict.list.length === 0 ? <p className="text-sm text-grey-500">No approved providers with an active location yet.</p> : (
-            <div className="overflow-x-auto">
+            <div className="relative overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="text-left text-xs uppercase tracking-wide text-grey-500"><tr><th className="py-1 pr-3">District</th>{providersByDistrict.types.map((t) => <th key={t} className="px-2 py-1 text-right">{title(t)}</th>)}<th className="py-1 pl-2 text-right">Total</th></tr></thead>
+                <thead className="text-left text-xs text-grey-500"><tr><th className="py-1 pr-3">District</th>{providersByDistrict.types.map((t) => <th key={t} className="px-2 py-1 text-right">{title(t)}</th>)}<th className="py-1 pl-2 text-right">Total</th></tr></thead>
                 <tbody>
                   {providersByDistrict.list.map((r) => (
                     <tr key={r.district} className="border-t border-grey-100">
@@ -278,7 +278,7 @@ function ExportsTab({ prefill }: { prefill: { exportType: string; from: string; 
     if (j.filters.from || j.filters.to) parts.push(`${j.filters.from ? date(j.filters.from) : '…'} – ${j.filters.to ? date(new Date(new Date(j.filters.to).getTime() - 1).toISOString()) : '…'}`);
     if (j.filters.status) parts.push(title(j.filters.status));
     if (j.filters.providerId) parts.push(`Provider ${j.filters.providerId.slice(0, 8)}`);
-    return parts.length ? parts.join(' · ') : 'All rows';
+    return parts.length ? parts.join(' · ') : 'All Rows';
   };
   const expiryLabel = (j: Job) => {
     if (!j.expiresAt) return null;
@@ -340,7 +340,7 @@ function ExportsTab({ prefill }: { prefill: { exportType: string; from: string; 
                 <aside className="rounded-lg border border-grey-200 bg-grey-50 p-4 text-sm">
                   <p className="font-medium">{info.label}</p>
                   <p className="mt-1 text-xs text-grey-600">{info.description}</p>
-                  <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-grey-500">Columns</p>
+                  <p className="mt-3 text-xs font-semibold text-grey-500">Columns</p>
                   <p className="mt-1 font-mono text-[11px] leading-5 text-grey-700">{info.columns.join(', ')}</p>
                   <p className="mt-3 flex items-start gap-1.5 text-xs text-grey-600"><AlertTriangle size={12} className="mt-0.5 shrink-0 text-orange" aria-hidden /> No clinical content, documents or secrets are ever exported. Amount columns are in paise.</p>
                 </aside>

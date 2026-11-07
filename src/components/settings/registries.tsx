@@ -22,9 +22,9 @@ export function RegistrySettings() {
       <ConnectorForm key={JSON.stringify(conf.data)} c={conf.data} />
       <Card title="Where Each Check Is Verified" description="The registries that are authoritative for each credential. Most Indian registries only offer a search page; the connectors above cover the ones with APIs.">
         {cat.isPending ? <Skeleton rows={5} /> : cat.isError ? <ErrorState error={cat.error} /> : (
-          <div className="overflow-x-auto">
+          <div className="relative overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="text-left text-xs uppercase tracking-wide text-grey-500"><tr><th className="py-1 pr-3">Registry</th><th className="px-2 py-1">Checks</th><th className="px-2 py-1">Lookup</th><th className="px-2 py-1">Guidance</th></tr></thead>
+              <thead className="text-left text-xs text-grey-500"><tr><th className="py-1 pr-3">Registry</th><th className="px-2 py-1">Checks</th><th className="px-2 py-1">Lookup</th><th className="px-2 py-1">Guidance</th></tr></thead>
               <tbody>
                 {cat.data!.registries.map((r) => (
                   <tr key={r.key} className="border-t border-grey-100 align-top">
@@ -74,7 +74,7 @@ function ConnectorForm({ c }: { c: Connectors }) {
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
           <Field label="Environment"><Select value={f.environment} onChange={(e) => setF({ ...f, environment: e.target.value as 'sandbox' | 'production' })} disabled={disabled}><option value="sandbox">Sandbox (dev.abdm.gov.in)</option><option value="production">Production (live.abdm.gov.in)</option></Select></Field>
           <Field label="Client ID"><Input value={f.clientId} onChange={(e) => setF({ ...f, clientId: e.target.value })} disabled={disabled} autoComplete="off" /></Field>
-          <Field label="Client Secret" hint={c.abdm.hasSecret ? 'A secret is stored. Leave blank to keep it.' : 'Not set'}><PasswordInput value={f.clientSecret} onChange={(e) => setF({ ...f, clientSecret: e.target.value })} disabled={disabled} autoComplete="new-password" /></Field>
+          <Field label="Client Secret" hint={c.abdm.hasSecret ? 'A secret is stored. Leave blank to keep it.' : 'Not Set'}><PasswordInput value={f.clientSecret} onChange={(e) => setF({ ...f, clientSecret: e.target.value })} disabled={disabled} autoComplete="new-password" /></Field>
           <div className="flex items-end gap-2 pb-0.5">
             <Button variant="secondary" onClick={() => test.mutate()} loading={test.isPending} disabled={disabled || !status('abdm')}><PlugZap size={14} /> Test Session</Button>
             {c.abdm.hasSecret && !disabled && <Button variant="ghost" size="sm" className="h-10 text-red" onClick={() => clear.mutate('abdm')}>Clear Secret</Button>}
@@ -89,14 +89,14 @@ function ConnectorForm({ c }: { c: Connectors }) {
         <FormSection title="GSTIN Verification" icon={Landmark} accent={status('gstin') ? 'green' : 'orange'} hint="A GSP or vendor endpoint that returns JSON for GET <base URL>/<GSTIN> with a bearer key. The legal name and active status are compared with the provider record.">
           <div className="grid gap-3">
             <Field label="API Base URL"><Input value={f.gstinBaseUrl} onChange={(e) => setF({ ...f, gstinBaseUrl: e.target.value.trim() })} disabled={disabled} placeholder="https://api.yourgsp.in/v1/gstin" /></Field>
-            <Field label="API Key" hint={c.gstin.hasApiKey ? 'A key is stored. Leave blank to keep it.' : 'Not set'}><PasswordInput value={f.gstinApiKey} onChange={(e) => setF({ ...f, gstinApiKey: e.target.value })} disabled={disabled} autoComplete="new-password" /></Field>
+            <Field label="API Key" hint={c.gstin.hasApiKey ? 'A key is stored. Leave blank to keep it.' : 'Not Set'}><PasswordInput value={f.gstinApiKey} onChange={(e) => setF({ ...f, gstinApiKey: e.target.value })} disabled={disabled} autoComplete="new-password" /></Field>
             {c.gstin.hasApiKey && !disabled && <Button variant="ghost" size="sm" className="w-fit text-red" onClick={() => clear.mutate('gstin')}>Clear Key</Button>}
           </div>
         </FormSection>
         <FormSection title="Vahan Vehicle Registration" icon={Landmark} accent={status('vahan') ? 'green' : 'orange'} hint="An authorised Vahan partner endpoint: GET <base URL>/<registration number> with a bearer key. Returns RC status, insurance and fitness validity for ambulance checks.">
           <div className="grid gap-3">
             <Field label="API Base URL"><Input value={f.vahanBaseUrl} onChange={(e) => setF({ ...f, vahanBaseUrl: e.target.value.trim() })} disabled={disabled} placeholder="https://api.partner.in/v1/rc" /></Field>
-            <Field label="API Key" hint={c.vahan.hasApiKey ? 'A key is stored. Leave blank to keep it.' : 'Not set'}><PasswordInput value={f.vahanApiKey} onChange={(e) => setF({ ...f, vahanApiKey: e.target.value })} disabled={disabled} autoComplete="new-password" /></Field>
+            <Field label="API Key" hint={c.vahan.hasApiKey ? 'A key is stored. Leave blank to keep it.' : 'Not Set'}><PasswordInput value={f.vahanApiKey} onChange={(e) => setF({ ...f, vahanApiKey: e.target.value })} disabled={disabled} autoComplete="new-password" /></Field>
             {c.vahan.hasApiKey && !disabled && <Button variant="ghost" size="sm" className="w-fit text-red" onClick={() => clear.mutate('vahan')}>Clear Key</Button>}
           </div>
         </FormSection>

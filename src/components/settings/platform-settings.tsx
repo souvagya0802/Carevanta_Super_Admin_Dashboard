@@ -11,7 +11,7 @@ import { Badge, Button, Card, Dialog, EmptyState, ErrorState, Field, IconTile, I
 export interface SettingMeta { label: string; group: string; groupLabel: string; groupDescription: string | null; type: 'integer' | 'number' | 'boolean' | 'string' | 'json'; unit: string | null; min: number | null; max: number | null; step: number | null; pattern: string | null; patternHint: string | null; options: string[] | null; risk: 'low' | 'medium' | 'high'; help: string | null; default: unknown; isDefault: boolean }
 export interface Setting { key: string; value: unknown; description: string | null; isSensitive: boolean; version: number; updatedById: string | null; updatedBy: { id: string; fullName: string } | null; updatedAt: string; meta: SettingMeta }
 
-const RISK: Record<SettingMeta['risk'], { accent: Accent; label: string }> = { low: { accent: 'green', label: 'Low impact' }, medium: { accent: 'orange', label: 'Medium impact' }, high: { accent: 'red', label: 'High impact' } };
+const RISK: Record<SettingMeta['risk'], { accent: Accent; label: string }> = { low: { accent: 'green', label: 'Low Impact' }, medium: { accent: 'orange', label: 'Medium Impact' }, high: { accent: 'red', label: 'High Impact' } };
 const fmtValue = (s: Setting) => (s.isSensitive ? '••••••' : s.meta.type === 'boolean' ? (s.value ? 'On' : 'Off') : s.meta.type === 'json' ? JSON.stringify(s.value) : `${String(s.value)}${s.meta.unit ? ` ${s.meta.unit}` : ''}`);
 
 /** Grouped, searchable catalogue of platform settings with a typed change dialog. */
@@ -43,19 +43,19 @@ export function PlatformSettings() {
     <div className="space-y-4">
       <div className="grid grid-cols-3 gap-3">
         <Stat icon={Settings2} accent="ink" label="Settings" value={settings.data?.length} />
-        <Stat icon={History} accent="blue" label="Changed from default" value={changed} />
-        <Stat icon={ShieldAlert} accent="red" label="High impact" value={high} />
+        <Stat icon={History} accent="blue" label="Changed from Default" value={changed} />
+        <Stat icon={ShieldAlert} accent="red" label="High Impact" value={high} />
       </div>
       <Card padded={false}>
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-grey-100 px-5 py-3">
           <Tabs active={group} onChange={setGroup} tabs={[{ key: 'all', label: 'All', count: settings.data?.length }, ...groups.map(([g, v]) => ({ key: g, label: v.label, count: v.items.length }))]} />
           <div className="relative w-full sm:w-72">
             <Search size={15} aria-hidden className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-grey-400" />
-            <Input aria-label="Search settings" placeholder="Search settings…" value={q} onChange={(e) => setQ(e.target.value)} className="pl-9 pr-8" />
-            {q && <button type="button" aria-label="Clear search" onClick={() => setQ('')} className="absolute top-1/2 right-2 -translate-y-1/2 text-grey-400 hover:text-ink"><X size={14} /></button>}
+            <Input aria-label="Search Settings" placeholder="Search settings…" value={q} onChange={(e) => setQ(e.target.value)} className="pl-9 pr-8" />
+            {q && <button type="button" aria-label="Clear Search" onClick={() => setQ('')} className="absolute top-1/2 right-2 -translate-y-1/2 text-grey-400 hover:text-ink"><X size={14} /></button>}
           </div>
         </div>
-        {settings.isPending ? <div className="p-5"><Skeleton rows={6} /></div> : settings.isError ? <div className="p-5"><ErrorState error={settings.error} retry={() => settings.refetch()} /></div> : visible.length === 0 ? <div className="p-5"><EmptyState title="No settings match" description="Try another word or clear the group filter." /></div> : (
+        {settings.isPending ? <div className="p-5"><Skeleton rows={6} /></div> : settings.isError ? <div className="p-5"><ErrorState error={settings.error} retry={() => settings.refetch()} /></div> : visible.length === 0 ? <div className="p-5"><EmptyState title="No Settings Match" description="Try another word or clear the group filter." /></div> : (
           <div className="divide-y divide-grey-100">
             {visible.map(([g, v]) => (
               <section key={g} className="px-5 py-4">
@@ -149,7 +149,7 @@ function ChangeDialog({ setting: s, onClose, onSaved }: { setting: Setting; onCl
 
   return (
     <Dialog open onClose={close} size="lg" icon={m.risk === 'high' ? ShieldAlert : Settings2} title={`Change ${m.label}`} description={`${s.key} · version ${s.version}${s.updatedBy ? ` · last changed by ${s.updatedBy.fullName}` : ''}`}
-      footer={<><Button variant="ghost" onClick={close}>Cancel</Button><Button onClick={() => save.mutate()} loading={save.isPending} disabled={!canSave}>Save change</Button></>}>
+      footer={<><Button variant="ghost" onClick={close}>Cancel</Button><Button onClick={() => save.mutate()} loading={save.isPending} disabled={!canSave}>Save Change</Button></>}>
       <div className="space-y-4">
         <div className="flex flex-wrap items-start gap-3">
           <Badge accent={risk.accent}>{risk.label}</Badge>
@@ -158,7 +158,7 @@ function ChangeDialog({ setting: s, onClose, onSaved }: { setting: Setting; onCl
         {s.description && <p className="text-grey-700">{s.description}</p>}
         {m.help && <div className={cx('flex items-start gap-2 rounded-xl px-3 py-2 text-xs', m.risk === 'high' ? 'bg-red-soft text-grey-800' : 'bg-grey-50 text-grey-700')}><AlertTriangle size={14} className={cx('mt-0.5 shrink-0', m.risk === 'high' ? 'text-red' : 'text-grey-500')} aria-hidden /><p>{m.help}</p></div>}
 
-        <Field label="New value" required error={parsed.error} hint={m.type === 'integer' || m.type === 'number' ? [m.min != null ? `min ${m.min}` : null, m.max != null ? `max ${m.max}` : null, m.unit].filter(Boolean).join(' · ') || undefined : m.patternHint ? `Format: ${m.patternHint}` : undefined}>
+        <Field label="New Value" required error={parsed.error} hint={m.type === 'integer' || m.type === 'number' ? [m.min != null ? `min ${m.min}` : null, m.max != null ? `max ${m.max}` : null, m.unit].filter(Boolean).join(' · ') || undefined : m.patternHint ? `Format: ${m.patternHint}` : undefined}>
           {m.type === 'boolean' ? (
             <div role="radiogroup" aria-label="Value" className="inline-flex rounded-xl bg-grey-100 p-1">
               {([['true', 'On'], ['false', 'Off']] as const).map(([v, l]) => <button key={v} type="button" role="radio" aria-checked={raw === v} onClick={() => setRaw(v)} className={cx('rounded-lg px-4 py-1.5 text-sm transition-colors', raw === v ? 'bg-paper font-semibold shadow-sm' : 'text-grey-600 hover:text-ink')}>{l}</button>)}
@@ -184,7 +184,7 @@ function ChangeDialog({ setting: s, onClose, onSaved }: { setting: Setting; onCl
           </div>
         )}
 
-        <Field label="Reason for change" required hint="At least 5 characters · stored in the audit log with the old and new value" error={reason && reason.trim().length < 5 ? 'Please say a little more' : undefined}>
+        <Field label="Reason for Change" required hint="At least 5 characters · stored in the audit log with the old and new value" error={reason && reason.trim().length < 5 ? 'Please say a little more' : undefined}>
           <Textarea value={reason} onChange={(e) => setReason(e.target.value.slice(0, 1000))} className="min-h-16" placeholder="e.g. Pilot providers asked for a longer cancellation window" />
         </Field>
         {needsAck && (

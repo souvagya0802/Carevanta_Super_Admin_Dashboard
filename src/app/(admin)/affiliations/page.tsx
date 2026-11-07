@@ -107,13 +107,13 @@ function AffiliationsInner() {
                 <div><dt className="text-xs text-grey-500">Department</dt><dd>{selected.department?.name ?? '—'}</dd></div>
                 <div><dt className="text-xs text-grey-500">Role</dt><dd>{selected.roleTitle ?? '—'} · {title(selected.engagementType)}</dd></div>
                 <div><dt className="text-xs text-grey-500">Consultation Fee</dt><dd className="tnum">{money(selected.consultationFeeMinor)}</dd></div>
-                <div><dt className="text-xs text-grey-500">Period</dt><dd>{selected.startDate ? date(selected.startDate) : 'Not started'}{selected.endDate ? ` → ${date(selected.endDate)}` : ''}</dd></div>
+                <div><dt className="text-xs text-grey-500">Period</dt><dd>{selected.startDate ? date(selected.startDate) : 'Not Started'}{selected.endDate ? ` → ${date(selected.endDate)}` : ''}</dd></div>
                 <div><dt className="text-xs text-grey-500">Initiated By</dt><dd>{title(selected.initiatedBy)}</dd></div>
                 {selected.statusReason && <div className="sm:col-span-2"><dt className="text-xs text-grey-500">Latest Note</dt><dd>{selected.statusReason}</dd></div>}
               </dl>
             </FormSection>
             <div>
-              <h3 className="text-xs font-semibold uppercase tracking-wide text-grey-500">Timeline</h3>
+              <h3 className="text-xs font-semibold text-grey-500">Timeline</h3>
               <ul className="mt-1 divide-y divide-grey-100 text-xs">{selected.events.map((e, i) => <li key={i} className="flex justify-between gap-2 py-1.5"><span>{e.fromStatus ? `${title(e.fromStatus)} → ` : ''}<span className="font-medium">{title(e.toStatus)}</span> by {e.actorKind.toLowerCase()}{e.note ? ` — ${e.note}` : ''}</span><span className="shrink-0 text-grey-500">{dateTime(e.createdAt)}</span></li>)}</ul>
             </div>
           </div>
@@ -141,7 +141,7 @@ function ProviderPicker({ label, type, value, valueName, onChange, className }: 
       <Input aria-label={label} placeholder={`${label} Name`} value={q} onChange={(e) => setQ(e.target.value)} className="w-full pl-9" />
       {dq.length >= 2 && (
         <ul className="absolute inset-x-0 top-full z-20 mt-1 max-h-56 overflow-y-auto rounded-lg border border-grey-200 bg-paper py-1 text-sm shadow-[var(--shadow-float)]">
-          {hits.isPending ? <li className="px-3 py-2 text-grey-500">Searching…</li> : hits.data?.length ? hits.data.filter((p) => !type || p.type === type || (type === 'FACILITY' && p.type !== 'DOCTOR')).map((p) => <li key={p.id}><button type="button" className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left hover:bg-grey-50" onClick={() => { onChange(p.id, p.displayName); setQ(''); }}><span className="truncate">{p.displayName}</span><span className="shrink-0 text-xs text-grey-500">{title(p.type)} · {title(p.status)}</span></button></li>) : <li className="px-3 py-2 text-grey-500">No providers match</li>}
+          {hits.isPending ? <li className="px-3 py-2 text-grey-500">Searching…</li> : hits.data?.length ? hits.data.filter((p) => !type || p.type === type || (type === 'FACILITY' && p.type !== 'DOCTOR')).map((p) => <li key={p.id}><button type="button" className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left hover:bg-grey-50" onClick={() => { onChange(p.id, p.displayName); setQ(''); }}><span className="truncate">{p.displayName}</span><span className="shrink-0 text-xs text-grey-500">{title(p.type)} · {title(p.status)}</span></button></li>) : <li className="px-3 py-2 text-grey-500">No Providers Match</li>}
         </ul>
       )}
     </div>

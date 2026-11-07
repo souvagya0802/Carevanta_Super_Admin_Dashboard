@@ -108,17 +108,17 @@ export default function CasePage() {
                 {guidance.isPending ? <div className="mt-3 h-10 animate-pulse rounded-lg bg-grey-100" /> : gi && (
                   <div className="mt-3 grid gap-3 md:grid-cols-2">
                     <div>
-                      <p className="text-xs font-semibold uppercase tracking-wide text-grey-500">On File</p>
+                      <p className="text-xs font-semibold text-grey-500">On File</p>
                       {gi.identifiers.length ? <dl className="mt-1 space-y-1 text-sm">{gi.identifiers.map((i) => <div key={i.label + i.value} className="flex justify-between gap-3"><dt className="text-grey-500">{i.label}</dt><dd className="text-right font-medium break-all">{i.value}</dd></div>)}</dl> : <p className="mt-1 text-sm text-grey-500">Nothing on file for this check.</p>}
                       {gi.evidence.length > 0 && (
                         <>
-                          <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-grey-500">Evidence Documents</p>
+                          <p className="mt-3 text-xs font-semibold text-grey-500">Evidence Documents</p>
                           <ul className="mt-1 space-y-1 text-sm">{gi.evidence.map((e) => <li key={e.documentType} className="flex items-center justify-between gap-2"><span>{title(e.documentType)}</span><span className="flex items-center gap-1"><Badge accent={e.status === 'ACCEPTED' ? 'green' : e.status === 'UPLOADED' ? 'orange' : e.status === 'MISSING' ? 'ink' : 'red'}>{e.status === 'UPLOADED' ? 'Awaiting Review' : title(e.status)}</Badge>{e.status === 'UPLOADED' && can('providers.documents.review') && docs.data && <Button size="sm" variant="ghost" onClick={() => { const doc = docs.data!.find((x) => x.id === e.documentId); if (doc) setDocReview({ doc, decision: 'ACCEPTED' }); }}>Review</Button>}</span></li>)}</ul>
                         </>
                       )}
                     </div>
                     <div>
-                      <p className="text-xs font-semibold uppercase tracking-wide text-grey-500">Verify Against</p>
+                      <p className="text-xs font-semibold text-grey-500">Verify Against</p>
                       <ul className="mt-1 space-y-2">
                         {gi.registries.map((r) => (
                           <li key={r.key} className="rounded-lg border border-grey-200 p-2.5 text-xs">
@@ -135,7 +135,7 @@ export default function CasePage() {
                         <div className={cx('mt-2 rounded-lg border p-2.5 text-xs', lk.outcome === 'MATCH' ? 'border-green/30 bg-green-soft' : lk.outcome === 'NO_MATCH' ? 'border-red/30 bg-red-soft' : 'border-orange/30 bg-orange-soft')}>
                           <p className="font-medium">Lookup: {title(lk.outcome)}</p>
                           <p className="mt-0.5 text-grey-700">{lk.summary}</p>
-                          {lk.raw && <details className="mt-1"><summary className="cursor-pointer text-grey-500">Registry response</summary><pre className="mt-1 max-h-40 overflow-auto whitespace-pre-wrap font-mono text-[11px]">{JSON.stringify(lk.raw, null, 2)}</pre></details>}
+                          {lk.raw && <details className="mt-1"><summary className="cursor-pointer text-grey-500">Registry Response</summary><pre className="mt-1 max-h-40 overflow-auto whitespace-pre-wrap font-mono text-[11px]">{JSON.stringify(lk.raw, null, 2)}</pre></details>}
                           {canWork && lk.outcome !== 'UNAVAILABLE' && <Button size="sm" variant="secondary" className="mt-2" onClick={() => openRecord(k, { status: lk.outcome === 'MATCH' ? 'PASSED' : 'FAILED', method: 'AUTHORISED_THIRD_PARTY_API', sourceReference: lk.reference ?? '', notes: lk.summary })}>Record This Result</Button>}
                         </div>
                       )}
@@ -200,7 +200,7 @@ export default function CasePage() {
           <Field label={docReview?.decision === 'REJECTED' ? 'Reason' : 'Note'} required={docReview?.decision === 'REJECTED'}><Textarea value={docNote} onChange={(e) => setDocNote(e.target.value)} /></Field>
         </div>
       </ConfirmDialog>
-      {runLookup.isPending && <p className="sr-only" role="status"><Loader2 className="animate-spin" /> Looking up</p>}
+      {runLookup.isPending && <p className="sr-only" role="status"><Loader2 className="animate-spin" /> Looking Up</p>}
     </RequirePermission>
   );
 }
