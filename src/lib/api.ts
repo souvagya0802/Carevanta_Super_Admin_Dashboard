@@ -188,6 +188,18 @@ export async function request<T>(path: string, opts: RequestOptions = {}): Promi
   return json as T;
 }
 
+/**
+ * A raw authorised fetch for streaming responses (the live notification stream).
+ * Uses the current session, refreshing it once on 401, like request().
+ */
+export async function authorizedFetch(path: string, init: RequestInit = {}): Promise<Response> {
+  if (!accessToken && session.hasRefreshToken()) await refresh();
+  const go = () => fetch(`${API_BASE}/api/v1${path}`, { ...init, headers: { ...(init.headers as Record<string, string> | undefined), ...(accessToken ? { authorization: `Bearer ${accessToken}` } : {}) } });
+  const res = await go();
+  if (res.status === 401 && (await refresh())) return go();
+  return res;
+}
+
 export const api = {
   get: <T>(path: string, signal?: AbortSignal) => request<T>(path, { signal }),
   post: <T>(path: string, body?: unknown, idempotencyKey?: string) => request<T>(path, { method: 'POST', body, idempotencyKey }),

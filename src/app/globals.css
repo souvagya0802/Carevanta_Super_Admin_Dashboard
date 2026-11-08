@@ -130,3 +130,35 @@ textarea:disabled {
     min-height: 40px;
   }
 }
+
+/* ─── Live alerts and the notification bell ──────────────────────────────── */
+@keyframes scale-in { from { opacity: 0; transform: scale(0.97); } to { opacity: 1; transform: none; } }
+@keyframes pop { 0% { transform: scale(0.9); } 60% { transform: scale(1.12); } 100% { transform: none; } }
+@keyframes alert-in {
+  0% { opacity: 0; transform: translateY(16px) scale(0.96); }
+  60% { opacity: 1; transform: translateY(-3px) scale(1.01); }
+  100% { opacity: 1; transform: none; }
+}
+@keyframes alert-glow {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--glow, #0a0a0a) 45%, transparent); }
+  70%, 100% { box-shadow: 0 0 0 9px color-mix(in srgb, var(--glow, #0a0a0a) 0%, transparent); }
+}
+@keyframes critical-pulse {
+  0% { box-shadow: 0 0 0 0 rgb(220 38 38 / 0.6); transform: scale(1); }
+  70% { box-shadow: 0 0 0 26px rgb(220 38 38 / 0); transform: scale(1.06); }
+  100% { box-shadow: 0 0 0 0 rgb(220 38 38 / 0); transform: scale(1); }
+}
+@keyframes critical-backdrop {
+  0%, 100% { background-color: rgb(127 29 29 / 0.72); }
+  50% { background-color: rgb(10 10 10 / 0.78); }
+}
+.animate-scale-in { animation: scale-in 220ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.animate-pop { animation: pop 320ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.animate-alert-in { animation: alert-in 420ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.alert-glow { animation: alert-glow 1.6s ease-in-out infinite; }
+.critical-pulse { animation: critical-pulse 1.4s ease-out infinite; }
+.critical-backdrop { animation: critical-backdrop 1.8s ease-in-out infinite; backdrop-filter: blur(3px); }
+@media (prefers-reduced-motion: reduce) {
+  .animate-scale-in, .animate-pop, .animate-alert-in, .alert-glow, .critical-pulse, .critical-backdrop { animation: none; }
+  .critical-backdrop { background-color: rgb(127 29 29 / 0.75); }
+}

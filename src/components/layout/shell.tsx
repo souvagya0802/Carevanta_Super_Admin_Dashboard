@@ -2,12 +2,14 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Bell, ChevronDown, LogOut, KeyRound, Menu, Search, X } from 'lucide-react';
+import { ChevronDown, LogOut, KeyRound, Menu, Search, X } from 'lucide-react';
 import { useEffect, useState, type ReactNode } from 'react';
 import { useAuth } from '@/lib/auth';
 import { Logo, useBranding } from '@/lib/branding';
 import { useGet } from '@/lib/hooks';
 import { NAV, NAV_GROUPS, visibleNav } from './nav';
+import { NotificationBell } from './notification-bell';
+import { AlertCenter } from './alert-center';
 import { Button, cx } from '@/components/ui/primitives';
 
 /**
@@ -108,8 +110,11 @@ export function AppShell({ children }: { children: ReactNode }) {
           <aside className="absolute inset-y-0 left-0 w-72 max-w-[85vw] shadow-xl">{nav}</aside>
         </div>
       )}
+      {/* Pop-up alerts for applications, support, refunds and emergencies; the bell keeps the history. */}
+      <AlertCenter />
       <div className="flex h-full min-w-0 flex-1 flex-col">
-        <header className="flex h-[72px] shrink-0 items-center gap-3 border-b border-grey-200 bg-paper/90 px-4 backdrop-blur lg:h-16 lg:px-8">
+        {/* relative z-40: backdrop-blur makes the header its own layer, so it must sit above <main> or the bell panel opens behind the page. */}
+        <header className="relative z-40 flex h-[72px] shrink-0 items-center gap-3 border-b border-grey-200 bg-paper/90 px-4 backdrop-blur lg:h-16 lg:px-8">
           <button type="button" className="-ml-2 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg hover:bg-grey-100 lg:hidden" aria-label="Open Menu" aria-expanded={open} onClick={() => setOpen(true)}><Menu size={20} aria-hidden /></button>
           <Logo size="nav" className="shrink-0 rounded-lg lg:hidden" />
           <div className="min-w-0 flex-1">
@@ -120,10 +125,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Search size={16} aria-hidden className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-grey-400" />
             <input aria-label="Search users or paste a provider id" placeholder="Search…" value={search} onChange={(e) => setSearch(e.target.value)} className="h-10 w-56 rounded-lg border border-grey-200 bg-grey-50 pr-3 pl-9 text-sm placeholder:text-grey-400 focus:border-ink focus:bg-paper lg:w-72" />
           </form>
-          <Link href="/notifications" aria-label={`Notifications${failedCount ? `, ${failedCount} failed` : ''}`} className="relative flex h-10 w-10 items-center justify-center rounded-full text-grey-600 hover:bg-grey-100 hover:text-ink">
-            <Bell size={18} aria-hidden />
-            {failedCount > 0 && <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-red ring-2 ring-paper" />}
-          </Link>
+          <NotificationBell failedDeliveries={failedCount} />
           <details className="relative">
             <summary aria-label={`Account Menu for ${me.fullName}`} title="Account Menu" className="flex min-h-10 cursor-pointer list-none items-center gap-2 rounded-full p-1 pr-2 hover:bg-grey-100 [&::-webkit-details-marker]:hidden">
               <span className="flex h-8 w-8 items-center justify-center rounded-full bg-ink text-xs font-bold text-paper">{initials}</span>
