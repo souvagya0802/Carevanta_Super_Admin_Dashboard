@@ -108,7 +108,7 @@ export function Field({ label, error, hint, required, children, className }: { l
 export function Checkbox({ label, ...rest }: InputHTMLAttributes<HTMLInputElement> & { label: string }) {
   return (
     <label className="inline-flex items-center gap-2 text-sm">
-      <input type="checkbox" className="h-4 w-4 rounded accent-black" {...rest} />
+      <input type="checkbox" className="h-4 w-4 rounded-sm accent-black" {...rest} />
       {label}
     </label>
   );
@@ -185,7 +185,7 @@ export function Stat({ label, value, hint, loading, icon, accent = 'ink', trend,
       <div className="flex items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
           {icon && <IconTile icon={icon} accent={accent} />}
-          {loading ? <div className="h-8 w-28 animate-pulse rounded bg-grey-100" /> : <p className="tnum truncate text-2xl font-bold tracking-tight">{value}</p>}
+          {loading ? <div className="h-8 w-28 animate-pulse rounded-sm bg-grey-100" /> : <p className="tnum truncate text-2xl font-bold tracking-tight">{value}</p>}
         </div>
         {trend && <span className={cx('shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold', trendUp === false ? 'bg-red-soft text-red' : 'bg-green-soft text-green')}>{trend}</span>}
       </div>
@@ -278,7 +278,7 @@ export function Dialog({ open, onClose, title, description, icon: Icon, children
               {Icon && <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/10"><Icon size={18} aria-hidden /></span>}
               <div className="min-w-0">
                 <h2 id={`${id}-title`} className="truncate text-base font-semibold leading-tight">{title}</h2>
-                {description && <p className="mt-0.5 truncate text-xs text-grey-400">{description}</p>}
+                {description && <p className="mt-0.5 line-clamp-2 text-xs text-grey-400">{description}</p>}
               </div>
             </div>
             <button type="button" onClick={onClose} aria-label="Close" className="-mr-2 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-grey-400 hover:bg-white/10 hover:text-paper sm:h-8 sm:w-8"><X size={16} aria-hidden /></button>

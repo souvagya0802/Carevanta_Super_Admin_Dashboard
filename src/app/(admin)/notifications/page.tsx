@@ -19,7 +19,11 @@ interface Notification { id: string; userId: string | null; channel: string; tem
 interface Stats { byStatus: Record<string, number>; last24h: Record<string, number>; byChannel24h: Record<string, number>; oldestQueuedAt: string | null; drivers: Record<string, 'smtp' | 'log'>; processing: 'inline' | 'background' }
 interface Template { id: string; key: string; channel: string; locale: string; version: number; subject: string | null; body: string; isActive: boolean }
 interface Catalogue { keys: { key: string; description: string; variables: Record<string, string>; channels: string[]; sample: Record<string, string> }[]; channels: string[]; locales: string[]; missing: { key: string; channel: string; locale: string }[] }
-interface Preview { errors: string[]; warnings: string[]; placeholders: string[]; rendered: { subject: string | null; body: string }; sms: { encoding: string; length: number; segments: number } | null }
+interface Preview { errors: string[]; warnings: string[]; placeholders: string[]; rendered: { subject: string | null; body: string; isHtml?: boolean; text?: string }; sms: { encoding: string; length: number; segments: number } | null }
+
+/** One-line, tag-free summary of a template body for the list (HTML email templates are shown as their text). */
+const plainText = (s: string) => s.replace(/<style[\s\S]*?<\/style>/gi, '').replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim();
+const TEMPLATE_QUERIES = ['/admin/notification-templates', '/admin/notification-templates/catalogue', '/admin/notifications/stats'];
 
 const STATUSES = ['QUEUED', 'SENT', 'FAILED', 'CANCELLED'];
 const LOCALE_NAMES: Record<string, string> = { en: 'English', bn: 'Bengali', hi: 'Hindi' };
@@ -205,7 +209,11 @@ function TemplatesTab({ catalogue, manage, smtp }: { catalogue: ReturnType<typeo
   const templates = useGet<Template[]>('/admin/notification-templates');
   const [draft, setDraft] = useState<Draft | null>(null);
   const [history, setHistory] = useState<{ key: string; channel: string; locale: string } | null>(null);
+  const [deactivating, setDeactivating] = useState<Template | null>(null);
   const cat = catalogue.data;
+  const refresh = () => { void templates.refetch(); void catalogue.refetch(); };
+  const activate = useAction((id: string) => api.post(`/admin/notification-templates/${id}/activate`), { success: 'Version activated', invalidate: TEMPLATE_QUERIES, onSuccess: () => { setHistory(null); refresh(); } });
+  const deactivate = useAction((id: string) => api.post(`/admin/notification-templates/${id}/deactivate`), { success: 'Template deactivated', invalidate: TEMPLATE_QUERIES, onSuccess: () => { setDeactivating(null); refresh(); } });
 
   // One row per (key, channel, locale) that either exists or that the code needs.
   const rows = useMemo(() => {
@@ -228,7 +236,7 @@ function TemplatesTab({ catalogue, manage, smtp }: { catalogue: ReturnType<typeo
     <>
       <Card
         title="Message Templates"
-        description="One active version per key, channel and language. Publishing never edits history: the previous version is kept and can be restored."
+        description={cat?.missing.length ? `${count(cat.missing.length)} message${cat.missing.length === 1 ? '' : 's'} the platform sends ${cat.missing.length === 1 ? 'has' : 'have'} no active template (highlighted below). One active version per key, channel and language; the previous version is kept and can be re-activated.` : 'Every message the platform sends has an active template. One active version per key, channel and language; the previous version is kept and can be re-activated.'}
         actions={manage && <Button size="sm" variant="secondary" onClick={startNew}><Plus size={14} /> New Template</Button>}
       >
         {templates.isPending || catalogue.isPending ? <Skeleton rows={6} /> : templates.isError ? <ErrorState error={templates.error} retry={() => templates.refetch()} /> : catalogue.isError ? <ErrorState error={catalogue.error} retry={() => catalogue.refetch()} /> : rows.length === 0 ? <p className="text-sm text-grey-500">No templates yet.</p> : (
@@ -249,10 +257,15 @@ function TemplatesTab({ catalogue, manage, smtp }: { catalogue: ReturnType<typeo
                         {r.active ? <span className="flex items-center gap-1.5"><Badge accent="green">Active</Badge><span className="tnum text-grey-600">v{r.active.version}</span></span> : r.needed ? <Badge accent="red">Missing</Badge> : <Badge>Inactive</Badge>}
                         {unused && r.active && <p className="mt-1 max-w-40 text-[11px] text-grey-500">Nothing sends this channel yet</p>}
                       </td>
-                      <td className="max-w-md px-2 py-2 text-xs">{r.active ? <>{r.active.subject && <p className="font-medium">{r.active.subject}</p>}<p className="line-clamp-2 text-grey-700" title={r.active.body}>{r.active.body}</p></> : <p className="text-grey-500">Deliveries of this message fail until a template is published.</p>}</td>
+                      <td className="max-w-md px-2 py-2 text-xs">{r.active ? <>{r.active.subject && <p className="font-medium">{r.active.subject}</p>}<p className="line-clamp-2 text-grey-700" title={plainText(r.active.body)}>{plainText(r.active.body)}</p></> : <p className="text-grey-500">{r.versions.length ? 'Switched off: deliveries of this message are skipped until a version is active.' : 'Deliveries of this message fail until a template is published.'}</p>}</td>
                       <td className="py-2 text-right whitespace-nowrap">
-                        {r.versions.length > 1 && <Button size="sm" variant="ghost" onClick={() => setHistory({ key: r.key, channel: r.channel, locale: r.locale })}><History size={14} /> {r.versions.length} Versions</Button>}
-                        {manage && (r.active ? <Button size="sm" variant="ghost" onClick={() => startFor(r.key, r.channel, r.locale, r.active)}>Edit</Button> : <Button size="sm" variant="secondary" onClick={() => startFor(r.key, r.channel, r.locale)}><Plus size={14} /> Create</Button>)}
+                        <div className="flex flex-wrap items-center justify-end gap-1">
+                          {r.versions.length > 1 && <Button size="sm" variant="ghost" onClick={() => setHistory({ key: r.key, channel: r.channel, locale: r.locale })}><History size={14} /> {r.versions.length} Versions</Button>}
+                          {manage && r.active && <Button size="sm" variant="ghost" onClick={() => startFor(r.key, r.channel, r.locale, r.active)}>Edit</Button>}
+                          {manage && r.active && <Button size="sm" variant="ghost" onClick={() => setDeactivating(r.active)}><Ban size={14} /> Deactivate</Button>}
+                          {manage && !r.active && r.versions.length > 0 && <Button size="sm" variant="secondary" loading={activate.isPending} onClick={() => activate.mutate(r.versions.slice().sort((a, b) => b.version - a.version)[0]!.id)}><Play size={14} /> Activate v{Math.max(...r.versions.map((v) => v.version))}</Button>}
+                          {manage && !r.active && <Button size="sm" variant={r.versions.length ? 'ghost' : 'secondary'} onClick={() => startFor(r.key, r.channel, r.locale, r.versions.slice().sort((a, b) => b.version - a.version)[0])}><Plus size={14} /> {r.versions.length ? 'New Version' : 'Create'}</Button>}
+                        </div>
                       </td>
                     </tr>
                   );
@@ -272,7 +285,12 @@ function TemplatesTab({ catalogue, manage, smtp }: { catalogue: ReturnType<typeo
               <li key={t.id} className={cx('rounded-lg border p-3', t.isActive ? 'border-ink' : 'border-grey-200')}>
                 <div className="flex items-center justify-between gap-2">
                   <span className="flex items-center gap-2 text-sm font-medium">v{t.version} {t.isActive && <Badge accent="green">Active</Badge>}</span>
-                  {manage && !t.isActive && <Button size="sm" variant="secondary" onClick={() => { setHistory(null); startFor(t.key, t.channel, t.locale, t); }}><RotateCcw size={14} /> Restore as New Version</Button>}
+                  {manage && !t.isActive && (
+                    <span className="flex flex-wrap gap-1">
+                      <Button size="sm" variant="secondary" loading={activate.isPending} onClick={() => activate.mutate(t.id)}><Play size={14} /> Activate This Version</Button>
+                      <Button size="sm" variant="ghost" onClick={() => { setHistory(null); startFor(t.key, t.channel, t.locale, t); }}><RotateCcw size={14} /> Edit as New Version</Button>
+                    </span>
+                  )}
                 </div>
                 {t.subject && <p className="mt-2 text-sm font-medium">{t.subject}</p>}
                 <p className="mt-1 whitespace-pre-wrap font-mono text-xs text-grey-700">{t.body}</p>
@@ -281,6 +299,17 @@ function TemplatesTab({ catalogue, manage, smtp }: { catalogue: ReturnType<typeo
           </ul>
         )}
       </Dialog>
+
+      <ConfirmDialog
+        open={!!deactivating}
+        onClose={() => setDeactivating(null)}
+        onConfirm={() => deactivating && deactivate.mutate(deactivating.id)}
+        title="Deactivate This Template?"
+        message={deactivating ? `${deactivating.key} · ${title(deactivating.channel)} · ${LOCALE_NAMES[deactivating.locale] ?? deactivating.locale} v${deactivating.version} will be switched off. New ${title(deactivating.channel)} messages for this key are skipped (not retried) until a version is active again; you can re-activate it from the version history.` : ''}
+        confirmLabel="Deactivate"
+        loading={deactivate.isPending}
+        danger
+      />
     </>
   );
 }
@@ -292,6 +321,7 @@ function TemplateEditor({ draft, catalogue, smtp, onClose, onPublished }: { draf
   const [preview, setPreview] = useState<Preview | null>(null);
   const [previewError, setPreviewError] = useState<string | null>(null);
   const [testTo, setTestTo] = useState('');
+  const [previewMode, setPreviewMode] = useState<'html' | 'text'>('html');
   const debounced = useDebounced(`${d.key}|${d.channel}|${d.subject}|${d.body}`, 400);
   const info = catalogue.keys.find((k) => k.key === d.key);
   const keyValid = /^[a-z0-9_.]{3,96}$/.test(d.key);
@@ -307,11 +337,14 @@ function TemplateEditor({ draft, catalogue, smtp, onClose, onPublished }: { draf
     // eslint-disable-next-line react-hooks/exhaustive-deps -- preview follows the debounced draft only
   }, [debounced]);
 
-  const publish = useAction(() => api.post('/admin/notification-templates', { key: d.key, channel: d.channel, locale: d.locale, subject: d.channel === 'EMAIL' ? d.subject : undefined, body: d.body }), { success: 'New version published and active', invalidate: ['/admin/notification-templates', '/admin/notifications/stats'], onSuccess: onPublished, onError: (e) => { if (e instanceof ApiError) toast.error(e); } });
+  const publish = useAction(() => api.post('/admin/notification-templates', { key: d.key, channel: d.channel, locale: d.locale, subject: d.channel !== 'SMS' && d.subject.trim() ? d.subject : undefined, body: d.body }), { success: 'New version published and active', invalidate: ['/admin/notification-templates', '/admin/notifications/stats'], onSuccess: onPublished, onError: (e) => { if (e instanceof ApiError) toast.error(e); } });
   const testSend = useAction(() => api.post<{ data: { messageId: string; subject: string } }>('/admin/notification-templates/test-send', { key: d.key, locale: d.locale, to: testTo }), { onSuccess: (r) => toast.success('Test email sent', r.data.subject) });
 
   const insert = (name: string) => setD({ ...d, body: `${d.body}${d.body && !d.body.endsWith(' ') ? ' ' : ''}{{${name}}}` });
   const shown = previewable ? preview : null;
+  // isHtml/text come from the API; fall back to a local check so an older API still previews correctly.
+  const htmlPreview = !!shown && (shown.rendered.isHtml ?? /<\/?[a-z][^>]*>/i.test(shown.rendered.body));
+  const previewText = shown ? (shown.rendered.text ?? plainText(shown.rendered.body)) : '';
   const blocked = !previewable || (d.channel === 'EMAIL' && !d.subject.trim()) || !shown || shown.errors.length > 0;
 
   return (
@@ -342,6 +375,7 @@ function TemplateEditor({ draft, catalogue, smtp, onClose, onPublished }: { draf
         <div className="grid gap-4 lg:grid-cols-2">
           <FormSection title="Message" icon={MessageSquareText} accent="purple" hint="Click a placeholder to insert it. Anything else in double braces renders empty and is refused.">
             {d.channel === 'EMAIL' && <Field label="Subject" required error={!d.subject.trim() && d.body ? 'Email needs a subject' : undefined} className="mb-3"><Input value={d.subject} onChange={(e) => setD({ ...d, subject: e.target.value })} maxLength={200} /></Field>}
+            {(d.channel === 'PUSH' || d.channel === 'IN_APP') && <Field label="Title" hint="Shown as the notification heading; placeholders work here too" className="mb-3"><Input value={d.subject} onChange={(e) => setD({ ...d, subject: e.target.value })} maxLength={200} /></Field>}
             <Field label="Body" required>
               <Textarea value={d.body} onChange={(e) => setD({ ...d, body: e.target.value })} className={cx('font-mono text-xs', d.channel === 'SMS' ? 'min-h-28' : 'min-h-44')} maxLength={8000} />
             </Field>
@@ -356,10 +390,24 @@ function TemplateEditor({ draft, catalogue, smtp, onClose, onPublished }: { draf
           <FormSection title="Preview" icon={CheckCircle2} accent="green" hint={info ? 'Rendered with sample values the platform would send.' : 'Rendered with placeholder names.'}>
             {previewError ? <ErrorState error={new Error(previewError)} /> : !shown ? <p className="text-sm text-grey-500">{previewable ? 'Rendering…' : 'Type a message to see the preview.'}</p> : (
               <>
-                <div className={cx('rounded-lg border border-grey-200 p-3 text-sm', d.channel === 'SMS' ? 'max-w-xs bg-green-soft' : 'bg-grey-50')}>
-                  {shown.rendered.subject && <p className="mb-1 font-medium">{shown.rendered.subject}</p>}
-                  <p className="whitespace-pre-wrap">{shown.rendered.body}</p>
-                </div>
+                {htmlPreview && (
+                  <div className="mb-2 flex items-center gap-1 text-xs">
+                    <button type="button" onClick={() => setPreviewMode('html')} className={cx('rounded-lg border px-2 py-0.5', previewMode === 'html' ? 'border-ink bg-ink text-paper' : 'border-grey-300 hover:bg-grey-50')}>HTML</button>
+                    <button type="button" onClick={() => setPreviewMode('text')} className={cx('rounded-lg border px-2 py-0.5', previewMode === 'text' ? 'border-ink bg-ink text-paper' : 'border-grey-300 hover:bg-grey-50')}>Plain Text</button>
+                    <span className="ml-1 text-grey-500">Both parts are sent; mail apps that cannot show HTML get the plain text.</span>
+                  </div>
+                )}
+                {htmlPreview && previewMode === 'html' ? (
+                  <div className="overflow-hidden rounded-lg border border-grey-200 bg-grey-50">
+                    {shown.rendered.subject && <p className="border-b border-grey-200 bg-paper px-3 py-2 text-sm font-medium">{shown.rendered.subject}</p>}
+                    <iframe title="Email preview" sandbox="" srcDoc={shown.rendered.body} className="h-80 w-full bg-paper" />
+                  </div>
+                ) : (
+                  <div className={cx('rounded-lg border border-grey-200 p-3 text-sm', d.channel === 'SMS' ? 'max-w-xs bg-green-soft' : 'bg-grey-50')}>
+                    {shown.rendered.subject && <p className="mb-1 font-medium">{shown.rendered.subject}</p>}
+                    <p className="whitespace-pre-wrap">{htmlPreview ? previewText : shown.rendered.body}</p>
+                  </div>
+                )}
                 {shown.errors.map((e) => <p key={e} role="alert" className="mt-2 flex items-start gap-1.5 text-xs text-red"><AlertTriangle size={12} className="mt-0.5 shrink-0" aria-hidden />{e}</p>)}
                 {shown.warnings.map((w) => <p key={w} className="mt-2 flex items-start gap-1.5 text-xs text-orange"><AlertTriangle size={12} className="mt-0.5 shrink-0" aria-hidden />{w}</p>)}
                 {!shown.errors.length && !shown.warnings.length && <p className="mt-2 flex items-center gap-1.5 text-xs text-green"><CheckCircle2 size={12} aria-hidden /> Ready to publish</p>}

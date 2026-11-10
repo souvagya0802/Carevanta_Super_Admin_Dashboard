@@ -30,7 +30,7 @@ export function newLocation(isPrimary: boolean): LocationDraft {
 /** Validation shared with the dialog so errors appear next to the right location. */
 export function validateLocation(l: LocationDraft): LocationErrors {
   const e: LocationErrors = {};
-  if (l.name.trim().length < 2) e.name = 'Give this place a name (e.g. "Tamluk Chamber")';
+  if (l.name.trim().length < 2) e.name = 'Give this place a name (e.g. "Main Chamber")';
   if (l.addressLine1.trim().length < 3) e.addressLine1 = 'Address is required';
   if (!l.point) e.point = 'Place the pin on the map';
   if (!/^[1-9][0-9]{5}$/.test(l.address.pincode)) e.pincode = '6-digit PIN';
@@ -121,7 +121,7 @@ export function PracticeLocations({ value, onChange, regions, regionsLoading, er
         <MapPin size={22} className="text-grey-400" aria-hidden />
         <p className="mt-2 text-sm font-medium">No {noun} added yet</p>
         <p className="mt-0.5 max-w-md text-xs text-grey-500">Optional now, but required before verification. Pick the spot on a map and the address fills in automatically.</p>
-        <Button type="button" variant="secondary" className="mt-4" onClick={add}><Plus size={16} aria-hidden /> Add {noun}</Button>
+        <Button type="button" variant="secondary" className="mt-4" onClick={add}><Plus size={16} aria-hidden /> Add {noun.replace(/bw/g, (c) => c.toUpperCase())}</Button>
       </div>
     );
   }
@@ -160,7 +160,7 @@ export function PracticeLocations({ value, onChange, regions, regionsLoading, er
                   <div className="space-y-3">
                     <p className="text-xs font-semibold text-grey-500">Address Details</p>
                     <div className="grid gap-3 md:grid-cols-2">
-                      <Field label="Place Name" required error={errs.name} hint="How patients will see it"><Input placeholder={noun === 'chamber' ? 'e.g. Tamluk Chamber' : 'e.g. Main Campus'} value={l.name} onChange={(e) => update(l.key, { name: e.target.value })} /></Field>
+                      <Field label="Place Name" required error={errs.name} hint="How patients will see it"><Input placeholder={noun === 'chamber' ? 'e.g. Main Chamber' : 'e.g. Main Campus'} value={l.name} onChange={(e) => update(l.key, { name: e.target.value })} /></Field>
                       <Field label="Phone" hint="Front desk, optional"><Input inputMode="tel" value={l.phone} onChange={(e) => update(l.key, { phone: e.target.value })} /></Field>
                       <Field label="Address Line" required error={errs.addressLine1} className="md:col-span-2"><Input placeholder="Building, street, landmark" value={l.addressLine1} onChange={(e) => update(l.key, { addressLine1: e.target.value })} /></Field>
                     </div>
@@ -182,7 +182,7 @@ export function PracticeLocations({ value, onChange, regions, regionsLoading, er
           );
         })}
       </ul>
-      <Button type="button" variant="secondary" onClick={add}><Plus size={16} aria-hidden /> Add Another {noun.charAt(0).toUpperCase() + noun.slice(1)}</Button>
+      <Button type="button" variant="secondary" onClick={add}><Plus size={16} aria-hidden /> Add Another {noun.replace(/bw/g, (c) => c.toUpperCase())}</Button>
     </div>
   );
 }

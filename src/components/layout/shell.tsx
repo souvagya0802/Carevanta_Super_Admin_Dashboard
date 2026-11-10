@@ -105,7 +105,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="flex h-dvh overflow-hidden bg-canvas">
       <aside className="hidden h-full w-64 shrink-0 lg:block">{nav}</aside>
       {open && (
-        <div className="fixed inset-0 z-40 lg:hidden" role="dialog" aria-modal="true" aria-label="Menu">
+        <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="Menu">
           <div className="absolute inset-0 bg-black/60" onClick={() => setOpen(false)} />
           <aside className="absolute inset-y-0 left-0 w-72 max-w-[85vw] shadow-xl">{nav}</aside>
         </div>
@@ -116,9 +116,9 @@ export function AppShell({ children }: { children: ReactNode }) {
         {/* relative z-40: backdrop-blur makes the header its own layer, so it must sit above <main> or the bell panel opens behind the page. */}
         <header className="relative z-40 flex h-[72px] shrink-0 items-center gap-3 border-b border-grey-200 bg-paper/90 px-4 backdrop-blur lg:h-16 lg:px-8">
           <button type="button" className="-ml-2 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg hover:bg-grey-100 lg:hidden" aria-label="Open Menu" aria-expanded={open} onClick={() => setOpen(true)}><Menu size={20} aria-hidden /></button>
-          <Logo size="nav" className="shrink-0 rounded-lg lg:hidden" />
+          <Logo size="nav" className="hidden shrink-0 rounded-lg sm:block lg:hidden" />
           <div className="min-w-0 flex-1">
-            <p className="truncate text-base font-semibold leading-tight">{current?.label ?? branding.name}</p>
+            <p className="line-clamp-2 text-sm font-semibold leading-tight sm:text-base">{current?.label ?? branding.name}</p>
             <p className="hidden truncate text-xs text-grey-500 sm:block">{current ? `${current.group} · ${branding.name}` : branding.tagline}</p>
           </div>
           <form onSubmit={onSearch} role="search" className="relative hidden md:block">

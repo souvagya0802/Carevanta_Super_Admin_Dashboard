@@ -195,7 +195,7 @@ function HeroTile({ icon: Icon, label, value, sub, loading }: { icon: LucideIcon
     <div className="rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur-sm">
       <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-3">
         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/10"><Icon size={18} aria-hidden /></span>
-        {loading ? <div className="h-8 w-24 animate-pulse rounded bg-white/10" /> : <p className="tnum min-w-0 max-w-full truncate text-2xl font-bold lg:text-3xl">{value}</p>}
+        {loading ? <div className="h-8 w-24 animate-pulse rounded-sm bg-white/10" /> : <p className="tnum min-w-0 max-w-full truncate text-2xl font-bold lg:text-3xl">{value}</p>}
       </div>
       <p className="mt-3 text-sm text-grey-300">{label}</p>
       <p className="mt-0.5 text-xs text-grey-400">{loading ? ' ' : sub}</p>

@@ -45,7 +45,7 @@ export default function AuditPage() {
             <Input aria-label="Entity Type" placeholder="Entity Type" value={filters.entityType} onChange={(e) => set('entityType', e.target.value)} className="w-40" />
             <Input aria-label="Entity ID" placeholder="Entity ID" value={filters.entityId} onChange={(e) => set('entityId', e.target.value.trim())} className="w-64" />
             <Input aria-label="Actor User ID" placeholder="Actor User ID" value={filters.actorUserId} onChange={(e) => set('actorUserId', e.target.value.trim())} className="w-64" />
-            <Select aria-label="Outcome" value={filters.outcome} onChange={(e) => set('outcome', e.target.value)} className="w-36"><option value="">Any Outcome</option><option value="SUCCESS">Success</option><option value="DENIED">Denied</option><option value="FAILURE">Failure</option></Select>
+            <Select aria-label="Outcome" value={filters.outcome} onChange={(e) => set('outcome', e.target.value)} className="w-44"><option value="">Any Outcome</option><option value="SUCCESS">Success</option><option value="DENIED">Denied</option><option value="FAILURE">Failure</option></Select>
             <Input type="date" aria-label="From" value={filters.from} onChange={(e) => set('from', e.target.value)} className="w-40" />
             <Input type="date" aria-label="To" value={filters.to} onChange={(e) => set('to', e.target.value)} className="w-40" />
           </>} />

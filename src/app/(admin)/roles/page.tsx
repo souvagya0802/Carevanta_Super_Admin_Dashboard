@@ -101,7 +101,7 @@ export default function RolesPage() {
                     <td className="py-3 align-top">
                       <span className="tnum font-medium">{r.key === 'SUPER_ADMIN' ? 'All' : count(r.permissions.length)}</span>
                       {sensitiveCount(r) > 0 && <span className="ml-2 text-xs text-orange">{sensitiveCount(r)} sensitive</span>}
-                      <div className="mt-1 flex max-w-sm flex-wrap gap-1">{r.permissions.slice(0, 4).map((p) => <PermChip key={p} k={p} sensitive={permIndex.get(p)?.isSensitive} />)}{r.permissions.length > 4 && <button type="button" onClick={() => setViewing(r)} className="rounded-md bg-grey-100 px-1.5 py-0.5 text-[11px] text-grey-600 hover:bg-grey-200">+{r.permissions.length - 4} more</button>}</div>
+                      <div className="mt-1 flex max-w-sm flex-wrap gap-1">{r.permissions.slice(0, 4).map((p) => <PermChip key={p} k={p} sensitive={permIndex.get(p)?.isSensitive} />)}{r.permissions.length > 4 && <button type="button" onClick={() => setViewing(r)} className="rounded-md bg-grey-100 px-1.5 py-0.5 text-[11px] text-grey-600 hover:bg-grey-200">+{r.permissions.length - 4} More</button>}</div>
                     </td>
                     <td className="py-3 align-top">
                       <button type="button" onClick={() => setHoldersOf(r)} className="inline-flex items-center gap-1.5 rounded-full bg-grey-100 px-2.5 py-1 text-xs font-medium hover:bg-grey-200" aria-label={`Show users holding ${r.name}`}><Users size={12} aria-hidden /> {r.activeAssignments}</button>
@@ -129,7 +129,7 @@ export default function RolesPage() {
                     <Badge accent={r.isSystem ? 'blue' : 'purple'}>{r.isSystem ? 'system' : 'custom'}</Badge>
                   </div>
                   {r.description && <p className="text-xs text-grey-600">{r.description}</p>}
-                  <div className="flex flex-wrap items-center gap-3 text-xs text-grey-600"><span><span className="tnum font-medium text-ink">{r.key === 'SUPER_ADMIN' ? 'All' : r.permissions.length}</span> permissions</span><button type="button" onClick={() => setHoldersOf(r)} className="inline-flex min-h-10 items-center gap-1 underline-offset-2 hover:underline sm:min-h-0"><Users size={12} /> {r.activeAssignments} holders</button><span>updated {relative(r.updatedAt)}</span></div>
+                  <div className="flex flex-wrap items-center gap-3 text-xs text-grey-600"><span><span className="tnum font-medium text-ink">{r.key === 'SUPER_ADMIN' ? 'All' : r.permissions.length}</span> Permissions</span><button type="button" onClick={() => setHoldersOf(r)} className="inline-flex min-h-10 items-center gap-1 underline-offset-2 hover:underline sm:min-h-0"><Users size={12} /> {r.activeAssignments} Holders</button><span>Updated {relative(r.updatedAt)}</span></div>
                   <div className="flex flex-wrap gap-2">
                     <Button size="sm" variant="secondary" onClick={() => setViewing(r)}><Eye size={14} /> View</Button>
                     {manage && <Button size="sm" variant="secondary" onClick={() => setEditor({ mode: 'clone', role: r })}><Copy size={14} /> Clone</Button>}
@@ -170,7 +170,7 @@ function MiniStat({ icon, accent, label, value, loading }: { icon: typeof Shield
   return (
     <div className="flex items-center gap-3 rounded-2xl border border-grey-200 bg-paper px-4 py-3 shadow-[var(--shadow-card)]">
       <IconTile icon={icon} accent={accent} size="sm" />
-      <div className="min-w-0">{loading ? <div className="h-5 w-10 animate-pulse rounded bg-grey-100" /> : <p className="tnum text-lg font-bold leading-tight">{value}</p>}<p className="truncate text-[11px] text-grey-500">{label}</p></div>
+      <div className="min-w-0">{loading ? <div className="h-5 w-10 animate-pulse rounded-sm bg-grey-100" /> : <p className="tnum text-lg font-bold leading-tight">{value}</p>}<p className="text-[11px] leading-tight text-grey-500">{label}</p></div>
     </div>
   );
 }
@@ -329,7 +329,7 @@ function RoleEditor({ mode, role, allRoles, catalogue, held, isSuperAdmin, holds
                 <Textarea value={description} onChange={(e) => setDescription(e.target.value.slice(0, 500))} className="min-h-20" />
               </Field>
               <Field label={reasonRequired ? 'Reason for change' : 'Reason (optional)'} required={reasonRequired} hint={reasonRequired ? 'Required because current holders are affected; stored in the audit log' : 'Stored in the audit log'} error={reasonRequired && reason && reason.trim().length < 5 ? 'At least 5 characters' : undefined}>
-                <Textarea value={reason} onChange={(e) => setReason(e.target.value.slice(0, 500))} className="min-h-16" placeholder={editing ? 'e.g. Ops leads now triage bookings' : 'e.g. New pilot team in Tamluk'} />
+                <Textarea value={reason} onChange={(e) => setReason(e.target.value.slice(0, 500))} className="min-h-16" placeholder={editing ? 'e.g. Ops leads now triage bookings' : 'e.g. New regional coordination team'} />
               </Field>
             </div>
           </FormSection>

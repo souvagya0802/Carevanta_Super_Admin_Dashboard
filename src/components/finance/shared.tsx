@@ -74,7 +74,7 @@ export function Kpi({ icon, accent, label, value, sub, loading, href }: { icon: 
     <div className={cx('flex items-start gap-3 rounded-2xl border border-grey-200 bg-paper px-4 py-3 shadow-[var(--shadow-card)]', href && 'transition-colors hover:bg-grey-50')}>
       <IconTile icon={icon} accent={accent} size="sm" />
       <div className="min-w-0">
-        {loading ? <div className="h-6 w-20 animate-pulse rounded bg-grey-100" /> : <p className="tnum truncate text-lg font-bold leading-tight">{value}</p>}
+        {loading ? <div className="h-6 w-20 animate-pulse rounded-sm bg-grey-100" /> : <p className="tnum truncate text-lg font-bold leading-tight">{value}</p>}
         <p className="break-words text-[11px] leading-snug text-grey-500">{label}</p>
         {sub && <p className="break-words text-[11px] leading-snug text-grey-600">{sub}</p>}
       </div>

@@ -163,7 +163,7 @@ function SmtpForm({ smtp }: { smtp: Smtp }) {
     <div className="grid gap-4 xl:grid-cols-[1fr_380px]">
       <FormSection title="Outbound Email (SMTP)" icon={ServerCog} accent="blue" hint="Used for invitations, password resets, provider status updates and verification messages. The password is encrypted at rest and never shown again.">
         <div className="mb-4 flex flex-wrap items-center gap-2">
-          {smtp.configured ? <Badge accent="green">configured</Badge> : <Badge accent="orange">not configured</Badge>}
+          {smtp.configured ? <Badge accent="green">Configured</Badge> : <Badge accent="orange">Not Configured</Badge>}
           <span className="text-xs text-grey-600">{smtp.configured ? `Sending through ${smtp.host}:${smtp.port} as ${smtp.fromAddress}` : 'Email notifications are written to the server log only until SMTP is saved.'}</span>
         </div>
         <div className="grid gap-3 md:grid-cols-2">

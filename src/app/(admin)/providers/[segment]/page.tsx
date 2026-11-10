@@ -29,7 +29,7 @@ export interface ProviderRow {
 }
 
 const columns: ColumnDef<ProviderRow, unknown>[] = [
-  { header: 'Name', cell: ({ row }) => <div><p className="font-medium">{row.original.displayName}</p><p className="text-xs text-grey-500">{row.original.legalName}</p></div> },
+  { header: 'Name', cell: ({ row }) => <div><p className="font-medium">{row.original.displayName}</p>{row.original.legalName && row.original.legalName !== row.original.displayName && <p className="text-xs text-grey-500">{row.original.legalName}</p>}</div> },
   { header: 'Status', cell: ({ row }) => <span className="flex gap-1"><Badge>{row.original.status}</Badge>{row.original.isListed && <Badge tone="ACTIVE">listed</Badge>}</span> },
   { header: 'Location', cell: ({ row }) => <span>{[row.original.city, row.original.district].filter(Boolean).join(', ') || '—'}</span> },
   { header: 'Rating', cell: ({ row }) => <span className="tnum text-xs">{row.original.ratingAverage != null ? `${rating(row.original.ratingAverage)} (${row.original.ratingCount})` : '—'}</span> },

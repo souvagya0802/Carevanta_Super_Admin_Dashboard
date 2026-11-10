@@ -207,10 +207,10 @@ function Tile({ label, value, sub, tone }: { label: string; value: string | null
   return (
     <div className="rounded-lg border border-grey-200 bg-grey-50 p-3">
       <p className="text-xs font-medium text-grey-500">{label}</p>
-      {value === null ? <div className="mt-1 h-7 w-24 animate-pulse rounded bg-grey-200" /> : (
+      {value === null ? <div className="mt-1 h-7 w-24 animate-pulse rounded-sm bg-grey-200" /> : (
         <p className={cx('tnum mt-1 flex items-center gap-1 text-xl font-bold', tone === 'up' && 'text-green', tone === 'down' && 'text-red')}>{tone === 'up' ? <TrendingUp size={16} aria-hidden /> : tone === 'down' ? <TrendingDown size={16} aria-hidden /> : null}{value}</p>
       )}
-      <p className="truncate text-xs text-grey-500">{sub}</p>
+      <p className="line-clamp-2 text-xs text-grey-500">{sub}</p>
     </div>
   );
 }

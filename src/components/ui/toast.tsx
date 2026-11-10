@@ -36,7 +36,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const toast = useCallback(
     (t: Omit<Toast, 'id'>) => {
       const id = ++seq.current;
-      setItems((xs) => [...xs, { ...t, id }]);
+      // No duplicate stacking: the same message replaces the copy already showing (a retry gets a new reference).
+      setItems((xs) => [...xs.filter((x) => !(x.kind === t.kind && x.title === t.title)), { ...t, id }]);
       setTimeout(() => remove(id), t.kind === 'error' ? 8000 : 4000);
     },
     [remove],
@@ -58,7 +59,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           <div
             key={t.id}
             role={t.kind === 'error' ? 'alert' : 'status'}
-            className={`pointer-events-auto flex items-start gap-3 border bg-paper p-3 text-sm shadow-lg ${t.kind === 'error' ? 'border-ink' : 'border-grey-300'}`}
+            className={`pointer-events-auto flex items-start gap-3 rounded-lg border bg-paper p-3 text-sm shadow-lg ${t.kind === 'error' ? 'border-ink' : 'border-grey-300'}`}
           >
             <div className="flex-1">
               <p className="font-medium">{t.title}</p>

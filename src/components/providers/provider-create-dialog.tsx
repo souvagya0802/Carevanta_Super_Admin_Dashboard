@@ -190,7 +190,7 @@ function ChipGroup({ options, value, onChange, columns = 'md:grid-cols-3 xl:grid
         return (
           <label key={o.code} className={cx('flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-sm', on ? 'border-ink bg-ink text-paper' : 'border-grey-200 bg-paper hover:bg-grey-50')}>
             <input type="checkbox" className="sr-only" checked={on} onChange={() => toggle(o.code)} />
-            <span className={cx('flex h-4 w-4 shrink-0 items-center justify-center rounded border text-[10px]', on ? 'border-paper bg-paper text-ink' : 'border-grey-300')}>{on ? '✓' : ''}</span>
+            <span className={cx('flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border text-[10px]', on ? 'border-paper bg-paper text-ink' : 'border-grey-300')}>{on ? '✓' : ''}</span>
             <span className="truncate">{o.label}</span>
           </label>
         );
@@ -389,7 +389,7 @@ function ProviderCreateDialogInner({ open, onClose, initialType = 'HOSPITAL', on
               <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
                 <Field label="Ownership"><Select {...r('ownershipType')}>{['PRIVATE', 'GOVERNMENT', 'TRUST_OR_NGO', 'OTHER'].map((o) => <option key={o} value={o}>{title(o)}</option>)}</Select></Field>
                 <Field label="Clinical Establishment Reg. No."><Input {...r('establishmentRegistrationNo')} /></Field>
-                <Field label="Registering Authority" hint="e.g. CMOH Purba Medinipur" className="xl:col-span-2"><Input {...r('establishmentRegistrationAuth')} /></Field>
+                <Field label="Registering Authority" hint="e.g. the district CMOH office" className="xl:col-span-2"><Input {...r('establishmentRegistrationAuth')} /></Field>
                 {type === 'HOSPITAL' && <Field label="Inpatient Beds"><Input type="number" min={0} {...r('bedCount')} /></Field>}
                 {type === 'HOSPITAL' && <Field label="ICU Beds"><Input type="number" min={0} {...r('icuBedCount')} /></Field>}
                 {type === 'CLINIC' && <Field label="Observation / Day-Care Beds" hint="0 for consultation-only clinics"><Input type="number" min={0} {...r('bedCount')} /></Field>}

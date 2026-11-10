@@ -77,7 +77,7 @@ export function DataTable<T extends { id: string }>({ path, params = {}, columns
                   className={cx('border-t border-grey-200', onRowClick && 'cursor-pointer hover:bg-grey-50')}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id} className="px-3 py-2 align-top">
+                    <td key={cell.id} className="px-3 py-2 align-middle">
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </td>
                   ))}

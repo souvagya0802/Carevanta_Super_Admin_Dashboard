@@ -178,8 +178,8 @@ function StatTile({ icon: Icon, label, value, sub, tone, onClick, active }: { ic
   return (
     <button type="button" onClick={onClick} className={cx('rounded-lg border p-3 text-left transition-colors', active ? 'border-ink' : 'border-grey-200 hover:border-grey-400', tone === 'bad' ? 'bg-red-soft' : tone === 'warn' ? 'bg-orange-soft' : 'bg-paper')}>
       <div className="flex items-center gap-2"><Icon size={16} aria-hidden className={cx(tone === 'bad' ? 'text-red' : tone === 'warn' ? 'text-orange' : 'text-grey-500')} /><p className="text-xs font-medium text-grey-600">{label}</p></div>
-      {value === null ? <div className="mt-1 h-7 w-14 animate-pulse rounded bg-grey-100" /> : <p className={cx('tnum mt-1 text-xl font-bold', tone === 'bad' && 'text-red', tone === 'warn' && 'text-orange')}>{value}</p>}
-      <p className="truncate text-xs text-grey-500" title={sub}>{sub}</p>
+      {value === null ? <div className="mt-1 h-7 w-14 animate-pulse rounded-sm bg-grey-100" /> : <p className={cx('tnum mt-1 text-xl font-bold', tone === 'bad' && 'text-red', tone === 'warn' && 'text-orange')}>{value}</p>}
+      <p className="line-clamp-2 text-xs text-grey-500" title={sub}>{sub}</p>
     </button>
   );
 }

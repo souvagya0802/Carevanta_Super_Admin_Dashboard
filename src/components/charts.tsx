@@ -62,7 +62,7 @@ export function SeriesChart({ points, unit = 'count', loading, error, retry, hei
   const fmt = (v: number) => (unit === 'INR_minor' ? money(v) : count(v));
   const axisFmt = (v: number) => (unit === 'INR_minor' ? `₹${Math.round(v / 100).toLocaleString('en-IN')}` : count(v));
   const common = { data: rows, margin: { top: 8, right: 8, left: 0, bottom: 0 } };
-  const tooltipStyle = { border: '1px solid #e5e7eb', borderRadius: 12, fontSize: 12, boxShadow: '0 10px 30px -10px rgb(16 24 40 / 0.25)' };
+  const tooltipStyle = { border: '1px solid #e5e7eb', borderRadius: 5, fontSize: 12, boxShadow: '0 10px 30px -10px rgb(16 24 40 / 0.25)' };
   return (
     <div style={{ height }} role="img" aria-label={`${kind} chart with ${groups.length} series over ${rows.length} buckets`}>
       <ResponsiveContainer width="100%" height="100%">
@@ -74,7 +74,7 @@ export function SeriesChart({ points, unit = 'count', loading, error, retry, hei
             <Tooltip formatter={(v) => fmt(Number(v))} labelFormatter={(l) => shortDate(String(l))} contentStyle={tooltipStyle} cursor={{ fill: '#f3f4f6' }} />
             {groups.length > 1 && <Legend wrapperStyle={{ fontSize: 11 }} iconType="circle" />}
             {groups.map((g, i) => (
-              <Bar key={g} dataKey={g} name={title(g)} stackId="a" fill={seriesColor(g, i)} radius={i === groups.length - 1 ? [6, 6, 0, 0] : 0} />
+              <Bar key={g} dataKey={g} name={title(g)} stackId="a" fill={seriesColor(g, i)} radius={i === groups.length - 1 ? [5, 5, 0, 0] : 0} />
             ))}
           </BarChart>
         ) : (
