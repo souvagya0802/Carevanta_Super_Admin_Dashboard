@@ -6,10 +6,12 @@ export const metadata: Metadata = {
   title: { default: 'Carevanta Admin', template: '%s · Carevanta Admin' },
   description: 'Carevanta platform administration',
   robots: { index: false, follow: false },
+  applicationName: 'Carevanta Admin',
+  appleWebApp: { capable: true, statusBarStyle: 'black', title: 'Carevanta Admin' },
   icons: { icon: '/icon-192.png', apple: '/icon-192.png' },
 };
 
-export const viewport: Viewport = { width: 'device-width', initialScale: 1 };
+export const viewport: Viewport = { width: 'device-width', initialScale: 1, themeColor: '#0a0a0a' };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
