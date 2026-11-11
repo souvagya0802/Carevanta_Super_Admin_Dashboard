@@ -127,26 +127,76 @@ function Conditions() {
   );
 }
 
+interface Department { id: string; code: string; name: string; specialityCode: string | null; isActive: boolean }
+interface Amenity { id: string; code: string; name: string; category: string; isActive: boolean }
+
 function Departments() {
   const { can } = useAuth();
-  const list = useGet<{ id: string; code: string; name: string; specialityCode: string | null; isActive: boolean }[]>('/admin/catalogue/departments');
-  const create = useAction((v: { code: string; name: string; specialityCode?: string }) => api.post('/admin/catalogue/departments', v), { success: 'Department added', invalidate: ['/admin/catalogue/departments'] });
+  const list = useGet<Department[]>('/admin/catalogue/departments');
+  const specialities = useGet<{ code: string; name: string; isActive: boolean }[]>(can('catalogue.manage') ? '/admin/catalogue/specialities' : null);
+  const [editing, setEditing] = useState<Department | null>(null);
+  const [f, setF] = useState({ name: '', specialityCode: '' });
+  const inv = ['/admin/catalogue/departments'];
+  const create = useAction((v: { code: string; name: string; specialityCode?: string }) => api.post('/admin/catalogue/departments', v), { success: 'Department added', invalidate: inv });
+  const save = useAction(() => api.patch(`/admin/catalogue/departments/${editing!.id}`, { name: f.name.trim(), specialityCode: f.specialityCode || null }), { success: 'Department updated', invalidate: inv, onSuccess: () => setEditing(null) });
+  const toggle = useAction((d: Department) => api.patch(`/admin/catalogue/departments/${d.id}`, { isActive: !d.isActive }), { success: 'Updated', invalidate: inv });
+  const open = (d: Department) => {
+    setF({ name: d.name, specialityCode: d.specialityCode ?? '' });
+    setEditing(d);
+  };
   return (
     <div className="space-y-4">
       {can('catalogue.manage') && <Card title="Add a Department"><CodeNameForm onSubmit={(v) => create.mutate(v)} loading={create.isPending} extra="speciality" /></Card>}
-      <Card title="Departments">{list.isPending ? <Skeleton /> : list.isError ? <ErrorState error={list.error} /> : <table className="w-full text-sm"><thead className="text-left text-xs text-grey-500"><tr><th className="py-1">Name</th><th>Code</th><th>Speciality</th><th>Active</th></tr></thead><tbody>{list.data.map((d) => <tr key={d.id} className="border-t border-grey-200"><td className="py-1.5">{d.name}</td><td className="font-mono text-xs">{d.code}</td><td className="text-xs">{d.specialityCode ?? '—'}</td><td>{d.isActive ? 'Yes' : 'No'}</td></tr>)}</tbody></table>}</Card>
+      <Card title="Departments" description="A deactivated department stays on facilities that already list it, but no facility can add it again.">
+        {list.isPending ? <Skeleton /> : list.isError ? <ErrorState error={list.error} /> : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm"><thead className="text-left text-xs text-grey-500"><tr><th className="py-1">Name</th><th>Code</th><th>Speciality</th><th>Active</th><th /></tr></thead>
+              <tbody>{list.data.map((d) => <tr key={d.id} className="border-t border-grey-200"><td className="py-1.5">{d.name}</td><td className="font-mono text-xs">{d.code}</td><td className="text-xs">{d.specialityCode ?? '—'}</td><td>{d.isActive ? 'Yes' : 'No'}</td><td className="text-right whitespace-nowrap">{can('catalogue.manage') && <><Button size="sm" variant="ghost" onClick={() => open(d)}>Edit</Button><Button size="sm" variant="ghost" onClick={() => toggle.mutate(d)} disabled={toggle.isPending}>{d.isActive ? 'Deactivate' : 'Activate'}</Button></>}</td></tr>)}</tbody></table>
+          </div>
+        )}
+      </Card>
+      <Dialog open={!!editing} onClose={() => setEditing(null)} title={`Edit Department ${editing?.code ?? ''}`} footer={<><Button variant="ghost" onClick={() => setEditing(null)}>Cancel</Button><Button onClick={() => save.mutate()} loading={save.isPending} disabled={f.name.trim().length < 2}>Save</Button></>}>
+        <div className="space-y-3">
+          <Field label="Name" required><Input value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} maxLength={120} /></Field>
+          <Field label="Speciality" hint="Optional. Links the department to a speciality for search."><Select value={f.specialityCode} onChange={(e) => setF({ ...f, specialityCode: e.target.value })}><option value="">None</option>{(specialities.data ?? []).filter((s) => s.isActive || s.code === f.specialityCode).map((s) => <option key={s.code} value={s.code}>{s.name}</option>)}</Select></Field>
+          <p className="text-xs text-grey-500">The code cannot change because facilities and doctors refer to it.</p>
+        </div>
+      </Dialog>
     </div>
   );
 }
 
 function Amenities() {
   const { can } = useAuth();
-  const list = useGet<{ id: string; code: string; name: string; category: string }[]>('/admin/catalogue/amenities');
-  const create = useAction((v: { code: string; name: string; category?: string }) => api.post('/admin/catalogue/amenities', { ...v, category: v.category ?? 'OTHER' }), { success: 'Amenity added', invalidate: ['/admin/catalogue/amenities'] });
+  const list = useGet<Amenity[]>('/admin/catalogue/amenities');
+  const [editing, setEditing] = useState<Amenity | null>(null);
+  const [f, setF] = useState({ name: '', category: '' });
+  const inv = ['/admin/catalogue/amenities'];
+  const create = useAction((v: { code: string; name: string; category?: string }) => api.post('/admin/catalogue/amenities', { ...v, category: v.category ?? 'OTHER' }), { success: 'Amenity added', invalidate: inv });
+  const save = useAction(() => api.patch(`/admin/catalogue/amenities/${editing!.id}`, { name: f.name.trim(), category: f.category.trim().toUpperCase().replace(/\s+/g, '_') }), { success: 'Amenity updated', invalidate: inv, onSuccess: () => setEditing(null) });
+  const toggle = useAction((a: Amenity) => api.patch(`/admin/catalogue/amenities/${a.id}`, { isActive: !a.isActive }), { success: 'Updated', invalidate: inv });
+  const open = (a: Amenity) => {
+    setF({ name: a.name, category: title(a.category) });
+    setEditing(a);
+  };
   return (
     <div className="space-y-4">
       {can('catalogue.manage') && <Card title="Add an Amenity"><CodeNameForm onSubmit={(v) => create.mutate(v)} loading={create.isPending} extra="category" /></Card>}
-      <Card title="Amenities">{list.isPending ? <Skeleton /> : list.isError ? <ErrorState error={list.error} /> : <table className="w-full text-sm"><thead className="text-left text-xs text-grey-500"><tr><th className="py-1">Name</th><th>Code</th><th>Category</th></tr></thead><tbody>{list.data.map((a) => <tr key={a.id} className="border-t border-grey-200"><td className="py-1.5">{a.name}</td><td className="font-mono text-xs">{a.code}</td><td>{title(a.category)}</td></tr>)}</tbody></table>}</Card>
+      <Card title="Amenities" description="A deactivated amenity disappears from the provider portal list. Providers that already list it keep it.">
+        {list.isPending ? <Skeleton /> : list.isError ? <ErrorState error={list.error} /> : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm"><thead className="text-left text-xs text-grey-500"><tr><th className="py-1">Name</th><th>Code</th><th>Category</th><th>Active</th><th /></tr></thead>
+              <tbody>{list.data.map((a) => <tr key={a.id} className="border-t border-grey-200"><td className="py-1.5">{a.name}</td><td className="font-mono text-xs">{a.code}</td><td>{title(a.category)}</td><td>{a.isActive ? 'Yes' : 'No'}</td><td className="text-right whitespace-nowrap">{can('catalogue.manage') && <><Button size="sm" variant="ghost" onClick={() => open(a)}>Edit</Button><Button size="sm" variant="ghost" onClick={() => toggle.mutate(a)} disabled={toggle.isPending}>{a.isActive ? 'Deactivate' : 'Activate'}</Button></>}</td></tr>)}</tbody></table>
+          </div>
+        )}
+      </Card>
+      <Dialog open={!!editing} onClose={() => setEditing(null)} title={`Edit Amenity ${editing?.code ?? ''}`} footer={<><Button variant="ghost" onClick={() => setEditing(null)}>Cancel</Button><Button onClick={() => save.mutate()} loading={save.isPending} disabled={f.name.trim().length < 2 || f.category.trim().length < 2}>Save</Button></>}>
+        <div className="space-y-3">
+          <Field label="Name" required><Input value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} maxLength={120} /></Field>
+          <Field label="Category" required hint="For example Clinical, Accessibility or Facility"><Input value={f.category} onChange={(e) => setF({ ...f, category: e.target.value })} maxLength={48} /></Field>
+          <p className="text-xs text-grey-500">The code cannot change because providers refer to it.</p>
+        </div>
+      </Dialog>
     </div>
   );
 }

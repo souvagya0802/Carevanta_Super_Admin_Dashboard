@@ -86,6 +86,7 @@ function Regions() {
   const regions = useGet<Region[]>('/admin/regions');
   const [adding, setAdding] = useState(false);
   const [statusChange, setStatusChange] = useState<{ region: Region; status: string } | null>(null);
+  const [editing, setEditing] = useState<Region | null>(null);
   const setStatus = useAction((x: { id: string; status: string }) => api.post(`/admin/regions/${x.id}/status`, { status: x.status }), { success: 'Region status updated', invalidate: ['/admin/regions'], onSuccess: () => setStatusChange(null) });
   const manage = can('regions.manage');
   const byStatus = useMemo(() => Object.fromEntries(REGION_STATUSES.map((s) => [s, (regions.data ?? []).filter((r) => r.status === s).length])), [regions.data]);
@@ -94,7 +95,7 @@ function Regions() {
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         {REGION_STATUSES.map((s) => <div key={s} className="rounded-2xl border border-grey-200 bg-paper px-4 py-3 shadow-[var(--shadow-card)]"><p className="tnum text-lg font-bold leading-tight">{regions.data ? byStatus[s] : '—'}</p><p className="text-[11px] text-grey-500">{title(s)}</p></div>)}
       </div>
-      <Card title="Service Regions" description="Launch areas (a town, block or district) that providers, dispatch and reporting are grouped by. The pilot starts with Moyna and Tamluk; add any Indian area the same way." actions={manage && <Button size="sm" onClick={() => setAdding(true)}><Plus size={14} /> Add Region</Button>} padded={false}>
+      <Card title="Service Regions" description="Launch areas (a town, block or district) that providers, dispatch and reporting are grouped by. Add each launch area here; nothing is pre-loaded." actions={manage && <Button size="sm" onClick={() => setAdding(true)}><Plus size={14} /> Add Region</Button>} padded={false}>
         {regions.isPending ? <div className="p-5"><Skeleton /></div> : regions.isError ? <div className="p-5"><ErrorState error={regions.error} retry={() => regions.refetch()} /></div> : regions.data.length === 0 ? <div className="p-5"><EmptyState title="No Service Regions Yet" description="Add the first launch area to start grouping providers." action={manage ? <Button onClick={() => setAdding(true)}>Add Region</Button> : undefined} /></div> : (
           <div className="relative overflow-x-auto">
             <table className="w-full text-sm">
@@ -107,7 +108,7 @@ function Regions() {
                     <td className="py-3"><Badge>{r.status}</Badge></td>
                     <td className="tnum py-3">{r.providerCount}</td>
                     <td className="py-3 text-xs text-grey-600">{r.launchedAt ? dateTime(r.launchedAt) : '—'}</td>
-                    {manage && <td className="px-5 py-3 text-right"><Select aria-label={`Status of ${r.name}`} value={r.status} onChange={(e) => setStatusChange({ region: r, status: e.target.value })} className="h-8 w-32 text-xs">{REGION_STATUSES.map((s) => <option key={s} value={s}>{title(s)}</option>)}</Select></td>}
+                    {manage && <td className="px-5 py-3 text-right"><div className="flex items-center justify-end gap-2"><Button size="sm" variant="ghost" onClick={() => setEditing(r)}>Edit</Button><Select aria-label={`Status of ${r.name}`} value={r.status} onChange={(e) => setStatusChange({ region: r, status: e.target.value })} className="h-8 w-32 text-xs">{REGION_STATUSES.map((s) => <option key={s} value={s}>{title(s)}</option>)}</Select></div></td>}
                   </tr>
                 ))}
               </tbody>
@@ -116,6 +117,7 @@ function Regions() {
         )}
       </Card>
       {adding && <AddRegionDialog onClose={() => setAdding(false)} />}
+      {editing && <EditRegionDialog key={editing.id} region={editing} onClose={() => setEditing(null)} />}
       <ConfirmDialog open={!!statusChange} onClose={() => setStatusChange(null)} onConfirm={() => statusChange && setStatus.mutate({ id: statusChange.region.id, status: statusChange.status })} loading={setStatus.isPending} danger={statusChange?.status === 'PAUSED'} title={statusChange ? `Set ${statusChange.region.name} to ${title(statusChange.status)}?` : ''} confirmLabel="Change Status" message={statusChange ? `${REGION_HELP[statusChange.status]}${statusChange.status === 'LIVE' && statusChange.region.providerCount === 0 ? ' This region has no providers yet, so patients would see an empty area.' : ''}` : ''} />
     </div>
   );
@@ -144,6 +146,25 @@ function AddRegionDialog({ onClose }: { onClose: () => void }) {
           <Field label="Region Name" required hint={nameDupe ? 'A region with this name already exists in that district' : 'Defaults to the city / town'}><Input value={f.name} placeholder={addr.city || 'e.g. Tamluk'} onChange={(e) => setF({ ...f, name: e.target.value })} maxLength={120} /></Field>
           <Field label="Code" required error={codeError} hint="Permanent identifier used in exports and integrations; suggested from country, state and name"><Input value={code} onChange={(e) => setF({ ...f, code: e.target.value.toUpperCase(), codeTouched: true })} className="font-mono" maxLength={64} /></Field>
         </div>
+      </div>
+    </Dialog>
+  );
+}
+
+function EditRegionDialog({ region, onClose }: { region: Region; onClose: () => void }) {
+  const [f, setF] = useState({ name: region.name, district: region.district, state: region.state });
+  const changed = f.name.trim() !== region.name || f.district.trim() !== region.district || f.state.trim() !== region.state;
+  const ready = changed && f.name.trim().length >= 2 && f.district.trim().length >= 2 && f.state.trim().length >= 2;
+  const save = useAction(() => api.patch(`/admin/regions/${region.id}`, { name: f.name.trim(), district: f.district.trim(), state: f.state.trim() }), { success: 'Region updated', invalidate: ['/admin/regions'], onSuccess: onClose });
+  return (
+    <Dialog open onClose={onClose} icon={Globe2} title={`Edit ${region.name}`} description="Correct the name, district or state. The code stays the same because provider locations refer to it." footer={<><Button variant="ghost" onClick={onClose}>Cancel</Button><Button onClick={() => save.mutate()} loading={save.isPending} disabled={!ready}>Save</Button></>}>
+      <div className="space-y-3">
+        <Field label="Region Name" required><Input value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} maxLength={120} /></Field>
+        <div className="grid gap-3 md:grid-cols-2">
+          <Field label="District" required><Input value={f.district} onChange={(e) => setF({ ...f, district: e.target.value })} maxLength={80} /></Field>
+          <Field label="State" required><Input value={f.state} onChange={(e) => setF({ ...f, state: e.target.value })} maxLength={80} /></Field>
+        </div>
+        <Field label="Code" hint="Permanent"><Input value={region.code} disabled className="font-mono" /></Field>
       </div>
     </Dialog>
   );
