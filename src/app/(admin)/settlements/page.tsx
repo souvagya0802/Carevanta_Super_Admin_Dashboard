@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
+import { InvoicesDialog } from '@/components/finance/invoices';
 import type { ColumnDef } from '@tanstack/react-table';
 import { AlertTriangle, Banknote, BookOpen, CheckCircle2, Clock, Landmark, Plus, Scale, Users, Wallet, XCircle } from 'lucide-react';
 import { api, ApiError, newIdempotencyKey } from '@/lib/api';
@@ -173,6 +174,7 @@ function BatchDialog({ id, onClose }: { id: string; onClose: () => void }) {
   const [payout, setPayout] = useState<Item | null>(null);
   const [failure, setFailure] = useState<Item | null>(null);
   const [confirm, setConfirm] = useState<null | 'approve' | 'cancel'>(null);
+  const [docs, setDocs] = useState(false);
   const [reason, setReason] = useState('');
   const [serverError, setServerError] = useState<string | null>(null);
   const onErr = (e: unknown) => { if (e instanceof ApiError) setServerError(e.message); };
@@ -196,8 +198,10 @@ function BatchDialog({ id, onClose }: { id: string; onClose: () => void }) {
       footer={<>
         {b?.status === 'PENDING_APPROVAL' && can('finance.settlements.approve') && <Button onClick={() => setConfirm('approve')} disabled={!canApprove} title={isMaker ? 'You prepared this batch; another approver must approve it' : undefined}><CheckCircle2 size={14} /> Approve Batch</Button>}
         {canCancel && <Button variant="danger" onClick={() => { setReason(''); setConfirm('cancel'); }}>Cancel Batch</Button>}
+        {b && ['APPROVED', 'PROCESSING', 'COMPLETED', 'PARTIALLY_FAILED'].includes(b.status) && <Button variant="secondary" onClick={() => setDocs(true)}>Invoices</Button>}
         <Button variant="ghost" onClick={onClose}>Close</Button>
       </>}>
+      {docs && b && <InvoicesDialog listPath={`/admin/finance/settlements/${b.id}/invoices`} title={`Batch ${b.reference} Documents`} description="Commission invoices and settlement statements per provider" onClose={() => setDocs(false)} />}
       {batch.isPending ? <Skeleton rows={6} /> : batch.isError ? <ErrorState error={batch.error} retry={refresh} /> : b && (
         <div className="space-y-4">
           <Lifecycle steps={BATCH_FLOW} current={b.status} terminal={terminal} />

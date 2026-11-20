@@ -13,6 +13,7 @@ import { DataTable } from '@/components/ui/data-table';
 import { Badge, Button, DescriptionList, Dialog, Field, FormSection, Input, PageHeader, Select, Skeleton, Textarea, cx, type Accent } from '@/components/ui/primitives';
 import { CompactMoney, ErrorState } from '@/components/ui/primitives';
 import { RequirePermission } from '@/components/layout/shell';
+import { InvoicesDialog } from '@/components/finance/invoices';
 import { ProviderPicker, type ProviderRef } from '@/components/forms/provider-picker';
 import { AmountRow, ExportButton, Kpi, Lifecycle, fmtBps, shortId, toMinor, useFinanceOverview } from '@/components/finance/shared';
 
@@ -113,6 +114,7 @@ function PaymentsTab({ onOpen }: { onOpen: (id: string) => void }) {
   const { can } = useAuth();
   const [status, setStatus] = useState('');
   const [abandon, setAbandon] = useState<Payment | null>(null);
+  const [invoicesOf, setInvoicesOf] = useState<Payment | null>(null);
   const columns: ColumnDef<Payment, unknown>[] = [
     { header: 'Gateway Order', cell: ({ row }) => <div><span className="font-mono text-xs">{row.original.gatewayOrderId}</span>{row.original.simulated && <Badge accent="blue">simulated</Badge>}<p className="text-[11px] text-grey-500">{row.original.gateway}</p></div> },
     { header: 'Gateway Payment ID', cell: ({ row }) => <span className="font-mono text-xs">{row.original.gatewayPaymentId ?? <span className="text-grey-400">not yet</span>}</span> },
@@ -120,9 +122,9 @@ function PaymentsTab({ onOpen }: { onOpen: (id: string) => void }) {
     { header: 'Status', cell: ({ row }) => <div><Badge>{row.original.status}</Badge>{row.original.failureReason && <p className="mt-0.5 max-w-xs text-[11px] text-red">{row.original.failureReason}</p>}</div> },
     { header: 'Method', cell: ({ row }) => <span className="text-xs">{row.original.method ? title(row.original.method) : '—'}</span> },
     { header: 'Captured', cell: ({ row }) => <span className="text-xs text-grey-600">{row.original.capturedAt ? dateTime(row.original.capturedAt) : '—'}</span> },
-    { id: 'actions', header: () => <span className="sr-only">Actions</span>, cell: ({ row }) => <div className="flex justify-end gap-1" onClick={(e) => e.stopPropagation()}>{can('finance.manual.record') && row.original.status === 'CREATED' && <Button size="sm" variant="ghost" className="text-red" onClick={() => setAbandon(row.original)}>Mark Abandoned</Button>}<Button size="sm" variant="ghost" onClick={() => onOpen(row.original.transactionId)}>Transaction</Button></div> },
+    { id: 'actions', header: () => <span className="sr-only">Actions</span>, cell: ({ row }) => <div className="flex justify-end gap-1" onClick={(e) => e.stopPropagation()}>{can('finance.manual.record') && row.original.status === 'CREATED' && <Button size="sm" variant="ghost" className="text-red" onClick={() => setAbandon(row.original)}>Mark Abandoned</Button>}{['CAPTURED', 'PARTIALLY_REFUNDED', 'REFUNDED'].includes(row.original.status) ? <Button size="sm" variant="ghost" onClick={() => setInvoicesOf(row.original)}>Invoices</Button> : <Button size="sm" variant="ghost" disabled title="Available after payment">Invoices</Button>}<Button size="sm" variant="ghost" onClick={() => onOpen(row.original.transactionId)}>Transaction</Button></div> },
   ];
-  return <>{abandon && <AbandonPaymentDialog payment={abandon} onClose={() => setAbandon(null)} />}<DataTable<Payment> path="/admin/finance/payments" params={{ status }} columns={columns} onRowClick={(p) => onOpen(p.transactionId)} emptyTitle="No Payments" emptyDescription="A payment appears when a patient starts paying online; it is captured only after the gateway webhook is verified." queryKey={['payments']} toolbar={<Select aria-label="Status" value={status} onChange={(e) => setStatus(e.target.value)} className="w-48"><option value="">All Statuses</option>{PAYMENT_STATUSES.map((s) => <option key={s} value={s}>{title(s)}</option>)}</Select>} /></>;
+  return <>{abandon && <AbandonPaymentDialog payment={abandon} onClose={() => setAbandon(null)} />}{invoicesOf && <InvoicesDialog listPath={`/admin/finance/transactions/${invoicesOf.transactionId}/invoices`} title="Invoices" description={`Payment ${invoicesOf.gatewayOrderId} · tax invoice and any credit notes`} onClose={() => setInvoicesOf(null)} />}<DataTable<Payment> path="/admin/finance/payments" params={{ status }} columns={columns} onRowClick={(p) => onOpen(p.transactionId)} emptyTitle="No Payments" emptyDescription="A payment appears when a patient starts paying online; it is captured only after the gateway webhook is verified." queryKey={['payments']} toolbar={<Select aria-label="Status" value={status} onChange={(e) => setStatus(e.target.value)} className="w-48"><option value="">All Statuses</option>{PAYMENT_STATUSES.map((s) => <option key={s} value={s}>{title(s)}</option>)}</Select>} /></>;
 }
 
 /* ─── Refunds ───────────────────────────────────────────────────────────── */

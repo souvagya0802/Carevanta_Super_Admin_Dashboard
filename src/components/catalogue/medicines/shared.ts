@@ -32,6 +32,10 @@ export interface Medicine {
   imageUrl?: string | null;
   imageSource?: string | null;
   imageUpdatedAt?: string | null;
+  imageCredit?: string | null;
+  imageLicence?: string | null;
+  imageSourceUrl?: string | null;
+  imageIsRepresentative?: boolean;
   stockedAt?: number;
 }
 

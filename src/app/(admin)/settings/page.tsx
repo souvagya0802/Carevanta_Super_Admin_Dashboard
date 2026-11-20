@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Suspense, useMemo, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import type { ColumnDef } from '@tanstack/react-table';
-import { AlertOctagon, BellRing, CreditCard, Gavel, Globe2, Landmark, LayoutTemplate, Mail, MapPinned, Palette, Plus, Settings2, ShieldAlert, Smartphone, type LucideIcon } from 'lucide-react';
+import { AlertOctagon, BellRing, CreditCard, FileText, Gavel, Globe2, Landmark, LayoutTemplate, Mail, MapPinned, Palette, Plus, Settings2, ShieldAlert, Smartphone, type LucideIcon } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { useAction, useGet } from '@/lib/hooks';
@@ -19,6 +19,7 @@ import { PaymentsSettings } from '@/components/settings/payments';
 import { PushSettings } from '@/components/settings/push';
 import { PatientAppSettings } from '@/components/settings/patient-app';
 import { PlatformSettings } from '@/components/settings/platform-settings';
+import { InvoiceSettings } from '@/components/settings/invoices';
 import { LocationFields, EMPTY_ADDRESS, type AddressValue } from '@/components/forms/location-fields';
 import { HOME_COUNTRY } from '@/lib/geo';
 
@@ -34,6 +35,7 @@ const TABS: { key: string; label: string; icon: LucideIcon; permission?: string 
   { key: 'portal', label: 'Provider Portal', icon: LayoutTemplate },
   { key: 'payments', label: 'Payments', icon: CreditCard },
   { key: 'push', label: 'Push', icon: BellRing },
+  { key: 'invoices', label: 'Invoices', icon: FileText },
   { key: 'patient', label: 'Patient App', icon: Smartphone },
   { key: 'regions', label: 'Service Regions', icon: MapPinned },
   { key: 'holds', label: 'Legal Holds', icon: Gavel, permission: 'compliance.manage' },
@@ -69,6 +71,7 @@ function SettingsInner() {
       {tab === 'portal' && <PortalConfig />}
       {tab === 'payments' && <PaymentsSettings />}
       {tab === 'push' && <PushSettings />}
+      {tab === 'invoices' && <InvoiceSettings />}
       {tab === 'patient' && <PatientAppSettings />}
       {tab === 'regions' && <Regions />}
       {tab === 'holds' && <Holds />}
