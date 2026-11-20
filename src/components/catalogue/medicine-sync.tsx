@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { RefreshCw } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useAction, useGet } from '@/lib/hooks';
-import { count, dateTime, title } from '@/lib/format';
+import { count, date, dateTime, title } from '@/lib/format';
 import { Badge, Button, ConfirmDialog, type Accent } from '@/components/ui/primitives';
 
 interface Counts { rows: number; added: number; updated: number; unchanged: number; discontinued: number; skipped: number }
@@ -14,6 +14,11 @@ interface SyncStatus {
   lastRelease: { sha: string; date: string | null; appliedAt: string; counts: Counts } | null;
   lastRun: { status: string; at: string; releaseDate?: string | null; reason?: string; counts?: Counts } | null;
 }
+
+const RUN_LABEL: Record<string, string> = { applied: 'Updated', unchanged: 'Already Up to Date', blocked: 'Stopped for Safety', failed: 'Failed', skipped: 'Skipped' };
+const dm = new Intl.DateTimeFormat('en-IN', { day: 'numeric', month: 'short', timeZone: 'Asia/Kolkata' });
+/** "12 Nov" */
+const shortDate = (iso: string) => dm.format(new Date(iso));
 
 /**
  * Loads the Government of India medicine list (CDCI) into the catalogue and
@@ -36,43 +41,44 @@ export function MedicineSyncPanel() {
   const accent: Accent = run?.status === 'applied' || run?.status === 'unchanged' ? 'green' : run?.status === 'blocked' || run?.status === 'failed' ? 'red' : 'ink';
 
   return (
-    <div className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-grey-200 p-3 text-sm">
+    <div className="flex flex-wrap items-center gap-3 rounded-[5px] border border-grey-200 bg-paper p-3 text-sm">
       <div className="min-w-0 flex-1">
-        <p className="font-medium">Government Medicine List</p>
         {status.isPending ? (
-          <p className="text-xs text-grey-500">Checking…</p>
+          <p><span className="font-medium">Government Medicine List:</span> <span className="text-grey-500">checking…</span></p>
         ) : s?.running ? (
-          <p className="text-xs text-grey-700">Sync in progress. You can leave this page; admins get a message when it finishes.</p>
+          <p><span className="font-medium">Government Medicine List:</span> <span className="text-grey-700">updating now. You can leave this page; admins get a message when it finishes.</span></p>
         ) : !s?.lastRelease ? (
-          <p className="text-xs text-grey-700">Not loaded yet. Load it once on a new server; after that it updates itself every month.</p>
+          <p><span className="font-medium">Government Medicine List:</span> <span className="text-grey-700">not loaded yet. Load it once on a new server; after that it updates itself every month.</span></p>
         ) : (
-          <p className="text-xs text-grey-700">
-            Release {s.lastRelease.date ? dateTime(s.lastRelease.date) : s.lastRelease.sha.slice(0, 7)} applied {dateTime(s.lastRelease.appliedAt)} · {count(s.lastRelease.counts.rows)} medicines
+          <p>
+            <span className="font-medium">Government Medicine List:</span>{' '}
+            <span className="text-grey-700">last updated {shortDate(s.lastRelease.appliedAt)}, {count(s.lastRelease.counts.rows)} medicines</span>
           </p>
         )}
         {run && !s?.running && (
           <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-grey-500">
-            <span>Last run {dateTime(run.at)}</span>
-            <Badge accent={accent}>{title(run.status)}</Badge>
-            {c && <span>{count(c.added)} added · {count(c.updated)} updated · {count(c.discontinued)} discontinued</span>}
+            <span>Last check {dateTime(run.at)}</span>
+            <Badge accent={accent}>{RUN_LABEL[run.status] ?? title(run.status)}</Badge>
+            {c && <span>{count(c.added)} new · {count(c.updated)} changed · {count(c.discontinued)} no longer sold</span>}
+            {s?.lastRelease && <span>Government release {s.lastRelease.date ? date(s.lastRelease.date) : s.lastRelease.sha.slice(0, 7)}</span>}
             {run.reason && <span className="text-grey-700">{run.reason}</span>}
           </p>
         )}
-        {s && !s.enabled && <p className="mt-1 text-xs text-orange">Monthly sync is turned off in Settings.</p>}
+        {s && !s.enabled && <p className="mt-1 text-xs text-orange">Automatic monthly updates are turned off in Settings.</p>}
       </div>
       <Button size="sm" onClick={() => setConfirm(true)} loading={s?.running || start.isPending} disabled={!s || s.running || !s.enabled}>
-        <RefreshCw size={14} aria-hidden /> {firstLoad ? 'Load Medicine List' : 'Sync Now'}
+        <RefreshCw size={14} aria-hidden /> {firstLoad ? 'Load Medicine List' : 'Update Now'}
       </Button>
       <ConfirmDialog
         open={confirm}
         onClose={() => setConfirm(false)}
         onConfirm={() => start.mutate()}
         loading={start.isPending}
-        title={firstLoad ? 'Load the Medicine List' : 'Sync the Medicine List'}
-        confirmLabel={firstLoad ? 'Load Now' : 'Sync Now'}
+        title={firstLoad ? 'Load the Medicine List' : 'Update the Medicine List'}
+        confirmLabel={firstLoad ? 'Load Now' : 'Update Now'}
         message={firstLoad
           ? 'The server downloads the Government of India medicine list (about 93,000 medicines) and adds it to the catalogue. It takes several minutes and runs in the background.'
-          : 'The server checks for a newer government release and applies it. Admin edits and pharmacy-added medicines are kept. Nothing is deleted.'}
+          : 'The server checks for a newer government list and applies it. Your edits, prescription rules, hidden medicines and pharmacy-added medicines are kept. Nothing is deleted.'}
       />
     </div>
   );

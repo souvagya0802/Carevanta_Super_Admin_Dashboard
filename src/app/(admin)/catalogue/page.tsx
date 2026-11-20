@@ -10,7 +10,7 @@ import { DataTable } from '@/components/ui/data-table';
 import { Badge, Button, Card, Checkbox, Dialog, ErrorState, Field, Input, PageHeader, Select, Skeleton, Tabs, Textarea } from '@/components/ui/primitives';
 import { RequirePermission } from '@/components/layout/shell';
 import { SearchTester, SearchWordsDialog, WordsSummary } from '@/components/catalogue/search-words';
-import { MedicineSyncPanel } from '@/components/catalogue/medicine-sync';
+import { MedicinesTab } from '@/components/catalogue/medicines/medicines-tab';
 
 const TABS = [{ key: 'specialities', label: 'Specialities' }, { key: 'conditions', label: 'Conditions & Mappings' }, { key: 'departments', label: 'Departments' }, { key: 'amenities', label: 'Amenities' }, { key: 'services', label: 'Services & Tests' }, { key: 'medicines', label: 'Medicines' }, { key: 'search', label: 'Search Tester' }];
 
@@ -26,7 +26,7 @@ export default function CataloguePage() {
         {tab === 'departments' && <Departments />}
         {tab === 'amenities' && <Amenities />}
         {tab === 'services' && <Services />}
-        {tab === 'medicines' && <Medicines />}
+        {tab === 'medicines' && <MedicinesTab />}
         {tab === 'search' && <SearchTester />}
       </div>
     </RequirePermission>
@@ -237,62 +237,6 @@ function Services() {
         </div>
       </Dialog>
       {words && <SearchWordsDialog key={words.id} open onClose={() => setWords(null)} title={words.name} words={words.synonyms ?? []} path={`/admin/catalogue/services/${words.id}`} invalidate={['/admin/catalogue/services']} />}
-    </Card>
-  );
-}
-
-interface Medicine { id: string; name: string; composition: string | null; code: string | null; source: string; genericName: string | null; strength: string | null; dosageForm: string | null; packSize: string | null; manufacturer: string | null; schedule: string; requiresPrescription: boolean; isActive: boolean }
-
-const SOURCE_LABEL: Record<string, string> = { CDCI: 'CDCI', PROVIDER: 'Pharmacy Added', MANUAL: 'Added by Admin' };
-
-function EditMedicineDialog({ medicine, onClose }: { medicine: Medicine; onClose: () => void }) {
-  const [f, setF] = useState({ name: medicine.name, strength: medicine.strength ?? '', dosageForm: medicine.dosageForm ?? '', manufacturer: medicine.manufacturer ?? '', schedule: medicine.schedule, requiresPrescription: medicine.requiresPrescription, isActive: medicine.isActive, reason: '' });
-  const save = useAction(() => api.patch(`/admin/catalogue/medicines/${medicine.id}`, { ...f, strength: f.strength || null, dosageForm: f.dosageForm || null, manufacturer: f.manufacturer || null }), { success: 'Medicine updated', invalidate: ['/admin/catalogue/medicines'], onSuccess: onClose });
-  return (
-    <Dialog open onClose={onClose} title="Edit Medicine" description={[SOURCE_LABEL[medicine.source] ?? medicine.source, medicine.code].filter(Boolean).join(' · ')} footer={<><Button variant="ghost" onClick={onClose}>Cancel</Button><Button onClick={() => save.mutate()} loading={save.isPending} disabled={f.name.trim().length < 2 || f.reason.trim().length < 3}>Save</Button></>}>
-      <div className="grid gap-3 sm:grid-cols-2">
-        <Field label="Name" required><Input value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} /></Field>
-        <Field label="Strength"><Input value={f.strength} onChange={(e) => setF({ ...f, strength: e.target.value })} /></Field>
-        <Field label="Dosage Form"><Input value={f.dosageForm} onChange={(e) => setF({ ...f, dosageForm: e.target.value })} /></Field>
-        <Field label="Manufacturer"><Input value={f.manufacturer} onChange={(e) => setF({ ...f, manufacturer: e.target.value })} /></Field>
-        <Field label="Schedule" hint="H, H1 and X always require a prescription"><Select value={f.schedule} onChange={(e) => setF({ ...f, schedule: e.target.value })}>{['OTC', 'SCHEDULE_G', 'SCHEDULE_H', 'SCHEDULE_H1', 'SCHEDULE_X', 'OTHER'].map((s) => <option key={s} value={s}>{title(s)}</option>)}</Select></Field>
-        <div className="flex flex-col justify-end gap-2 pb-2"><Checkbox label="Requires Prescription" checked={f.requiresPrescription} onChange={(e) => setF({ ...f, requiresPrescription: e.target.checked })} /><Checkbox label="Active" checked={f.isActive} onChange={(e) => setF({ ...f, isActive: e.target.checked })} /></div>
-        <Field label="Reason" required className="sm:col-span-2"><Input value={f.reason} onChange={(e) => setF({ ...f, reason: e.target.value })} placeholder="Why this change, for the audit log" /></Field>
-      </div>
-    </Dialog>
-  );
-}
-
-function Medicines() {
-  const { can } = useAuth();
-  const [q, setQ] = useState('');
-  const dq = useDebounced(q);
-  const [creating, setCreating] = useState(false);
-  const [source, setSource] = useState('');
-  const [editing, setEditing] = useState<Medicine | null>(null);
-  const [f, setF] = useState({ name: '', genericName: '', strength: '', dosageForm: '', packSize: '', manufacturer: '', schedule: 'OTC', requiresPrescription: false });
-  const create = useAction(() => api.post('/admin/catalogue/medicines', Object.fromEntries(Object.entries(f).map(([k, v]) => [k, v === '' ? undefined : v]))), { success: 'Medicine added', invalidate: ['/admin/catalogue/medicines'], onSuccess: () => setCreating(false) });
-  const columns: ColumnDef<Medicine, unknown>[] = [
-    { header: 'Medicine', cell: ({ row }) => <div><p className="font-medium">{row.original.name} {row.original.strength}</p><p className="text-xs text-grey-500">{[row.original.composition ?? row.original.genericName, row.original.dosageForm, row.original.packSize, row.original.manufacturer].filter(Boolean).join(' · ')}</p></div> },
-    { header: 'Schedule', cell: ({ row }) => <Badge>{row.original.schedule}</Badge> },
-    { header: 'Prescription', cell: ({ row }) => (row.original.requiresPrescription ? 'Required' : 'OTC') },
-    { header: 'Source', cell: ({ row }) => <Badge>{SOURCE_LABEL[row.original.source] ?? row.original.source}</Badge> },
-    { header: 'Code', cell: ({ row }) => <span className="font-mono text-xs">{row.original.code ?? '—'}</span> },
-    ...(can('catalogue.manage') ? [{ id: 'edit', header: '', cell: ({ row }: { row: { original: Medicine } }) => <Button size="sm" variant="ghost" onClick={() => setEditing(row.original)}>Edit</Button> } as ColumnDef<Medicine, unknown>] : []),
-  ];
-  return (
-    <Card title="Medicine Catalogue" actions={can('catalogue.manage') && <Button size="sm" variant="secondary" onClick={() => setCreating(true)}>Add Medicine</Button>}>
-      {can('catalogue.manage') && <MedicineSyncPanel />}
-      <DataTable<Medicine> path="/admin/catalogue/medicines" params={{ q: dq, source: source || undefined }} columns={columns} toolbar={<div className="flex flex-wrap gap-2"><Input aria-label="Search Medicines" placeholder="Brand or generic name" value={q} onChange={(e) => setQ(e.target.value)} className="w-64" /><Select aria-label="Source" value={source} onChange={(e) => setSource(e.target.value)} className="w-48"><option value="">All Sources</option>{Object.entries(SOURCE_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</Select></div>} />
-      <p className="mt-3 text-[11px] text-grey-500">Medicine names from Common Drug Codes for India (CDCI), © C-DAC / NRCeS, MoHFW, CC BY 4.0. Brand names belong to their owners. CDCI has no schedule data, so imported medicines start as Schedule H1, prescription required; edit a medicine to relax it.</p>
-      {editing && <EditMedicineDialog key={editing.id} medicine={editing} onClose={() => setEditing(null)} />}
-      <Dialog open={creating} onClose={() => setCreating(false)} title="Add a Medicine" footer={<><Button variant="ghost" onClick={() => setCreating(false)}>Cancel</Button><Button onClick={() => create.mutate()} loading={create.isPending} disabled={f.name.length < 2}>Add</Button></>}>
-        <div className="grid gap-3 sm:grid-cols-2">
-          {(['name', 'genericName', 'strength', 'dosageForm', 'packSize', 'manufacturer'] as const).map((k) => <Field key={k} label={title(k.replace(/([A-Z])/g, '_$1'))} required={k === 'name'}><Input value={f[k]} onChange={(e) => setF({ ...f, [k]: e.target.value })} /></Field>)}
-          <Field label="Schedule" hint="H, H1 and X always require a prescription"><Select value={f.schedule} onChange={(e) => setF({ ...f, schedule: e.target.value })}>{['OTC', 'SCHEDULE_G', 'SCHEDULE_H', 'SCHEDULE_H1', 'SCHEDULE_X', 'OTHER'].map((s) => <option key={s} value={s}>{title(s)}</option>)}</Select></Field>
-          <div className="flex items-end pb-2"><Checkbox label="Requires Prescription" checked={f.requiresPrescription} onChange={(e) => setF({ ...f, requiresPrescription: e.target.checked })} /></div>
-        </div>
-      </Dialog>
     </Card>
   );
 }
